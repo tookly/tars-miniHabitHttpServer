@@ -1,0 +1,28 @@
+{
+    "name": "phptars/tars-client",
+    "description": "tars的php-client能力",
+    "version":"0.2.2",
+    "authors": [
+        {
+            "name": "Chen Liang",
+            "email": "cedricliang21@gmail.com"
+        },
+        {
+            "name": "Xiaoguang Cui",
+            "email": "cuixiaoguang@yuewen.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3",
+        "phptars/tars-registry": "~0.1",
+        "phptars/tars-monitor": "~0.2",
+        "phptars/tars-utils": "~0.2"
+
+    },
+    "autoload": {
+        "psr-4": {
+            "Tars\\client\\": "src/"
+        }
+    }
+}

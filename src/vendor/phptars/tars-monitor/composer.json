@@ -1,0 +1,26 @@
+{
+  "name": "phptars/tars-monitor",
+  "description": "tars的主调和特性上报",
+  "minimum-stability": "dev",
+  "version":"0.2.3",
+  "authors": [
+    {
+      "name": "Jingfeng Liu",
+      "email": "liujingfeng.a@yuewen.com"
+    },
+    {
+      "name": "Chen liang",
+      "email": "cedricliang21@gmail.com"
+    }
+  ],
+  "require":{
+    "php": ">=5.5",
+    "phptars/tars-utils": "~0.2",
+    "phptars/tars-registry": "~0.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Tars\\monitor\\": "src/"
+    }
+  }
+}

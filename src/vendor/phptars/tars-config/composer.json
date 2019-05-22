@@ -1,0 +1,21 @@
+{
+  "name": "phptars/tars-config",
+  "description": "tars的配置拉取",
+  "minimum-stability": "dev",
+  "version":"0.1.6",
+  "authors": [
+    {
+      "name": "Chen liang",
+      "email": "cedricliang21@gmail.com"
+    }
+  ],
+  "require":{
+    "php": ">=5.3",
+    "phptars/tars-client": "~0.1"
+  },
+  "autoload" : {
+    "psr-4": {
+      "Tars\\config\\": "src/"
+    }
+  }
+}

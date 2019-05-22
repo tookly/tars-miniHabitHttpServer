@@ -1,0 +1,20 @@
+{
+  "name": "phptars/tars-utils",
+  "description": "tars的php辅助文件",
+  "version":"0.2.0",
+  "authors": [
+    {
+      "name": "Chen Liang",
+      "email": "cedricliang21@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Tars\\": "src/"
+    }
+  }
+}
