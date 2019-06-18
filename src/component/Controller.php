@@ -52,4 +52,28 @@ class Controller
     {
         $this->response->status($http_status_code);
     }
+    
+    public function getGet($key, $default = null)
+    {
+        return $this->request->get[$key] ?? $default;
+    }
+    
+    public function getPost($key, $default = null)
+    {
+        return $this->request->post[$key] ?? $default;
+    }
+    
+    public function sendSuccess($data = [])
+    {
+        list($res['code'], $res['message']) = Code::SUCCESS;
+        $res['data'] = $data;
+        $this->response->send($res);
+    }
+    
+    public function sendParamErr($data = [])
+    {
+        list($res['code'], $res['message']) = Code::ERROR_PARAMS;
+        $res['data'] = $data;
+        $this->response->send($res);
+    }
 }
