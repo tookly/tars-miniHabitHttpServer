@@ -7,7 +7,6 @@
  */
 namespace component;
 
-use Code;
 use HttpServer\conf\ENVConf;
 
 /**
