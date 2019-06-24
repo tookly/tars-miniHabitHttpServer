@@ -73,11 +73,12 @@ class Controller
     
     public function send($res)
     {
+        $this->header('Content-Type', 'application/json');
         if (is_array($res['code'])) {
             $code = $res['code'];
             list($res['code'], $res['message']) = $code;
         }
-        $this->response->send($res);
+        $this->response->send(json_encode($res));
     }
     
     public function sendSuccess($data = [])

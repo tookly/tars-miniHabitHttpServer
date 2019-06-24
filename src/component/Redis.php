@@ -5,7 +5,7 @@
  * Date: 2019/1/14
  * Time: 下午9:50
  */
-namespace component;
+namespace HttpServer\component;
 
 use HttpServer\conf\ENVConf;
 
