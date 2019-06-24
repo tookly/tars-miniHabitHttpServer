@@ -8,7 +8,7 @@
 
 namespace HttpServer\controller;
 
-use component\Redis;
+use HttpServer\component\Redis;
 use HttpServer\component\Controller;
 
 class TargetController extends Controller
