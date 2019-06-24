@@ -63,12 +63,12 @@ class Controller
     
     public function getGet($key, $default = null)
     {
-        return $this->request->get[$key] ?? $default;
+        return $this->request->data['get'][$key] ?? $default;
     }
     
     public function getPost($key, $default = null)
     {
-        return $this->request->post[$key] ?? $default;
+        return $this->request->data['post'][$key] ?? $default;
     }
     
     public function send($res)
