@@ -50,7 +50,7 @@ class TargetController extends Controller
         $targetId = $this->getGet('targetId', 1);
         $lines = Redis::instance()->zRevRange(sprintf(self::TARGET_NOTE_KEY, $targetId), 0, -1, true);
         $notes = [];
-        foreach ($lines as $dateline => $line) {
+        foreach ($lines as $line => $dateline) {
             $note = json_decode($line, true);
             if (empty($note)) {
                 continue;
@@ -106,14 +106,10 @@ class TargetController extends Controller
         $targetId = $this->getGet('targetId', 1);
         $end = time();
         $start = $end - 86400 * 20;
-        $endDate = date('Ymd', $end);
-        $startDate = date('Ymd', $start);
-        $records = Redis::instance()->zRevRangeByScore(sprintf(self::TARGET_SIGN_KEY, $targetId), $startDate, $endDate, true);
         $data = [];
-        for($i = $start; $i <= $end; $i = $i - 86400) {
-            $date = date('Ymd', $i);
-            $tmp['date'] = $date;
-            $tmp['times'] = $records[$date] ?? 0;
+        for($i = $end; $i >= $start; $i = $i - 86400) {
+            $tmp['date'] = date('Ymd', $i);
+            $tmp['times'] = (int)Redis::instance()->zScore(sprintf(self::TARGET_SIGN_KEY, $targetId), $tmp['date']);
             $data[] = $tmp;
         }
         $this->sendSuccess($data);
