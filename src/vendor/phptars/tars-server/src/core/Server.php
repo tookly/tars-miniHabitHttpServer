@@ -71,7 +71,7 @@ class Server
 
         $this->setting = $this->tarsServerConfig['setting'];
 
-        $this->route = $this->tarsServerConfig['route'];
+        $this->routeName = $this->tarsServerConfig['routeName'];
         $this->protocolName = $this->tarsServerConfig['protocolName'];
         $this->servType = $this->tarsServerConfig['servType'];
         $this->worker_num = $this->setting['worker_num'];
@@ -503,6 +503,7 @@ class Server
         $event = new Event();
         $protocol = ProtocolFactory::getProtocol($this->protocolName);
         $protocol->setRoute(RouteFactory::getRoute($this->routeName));
+        $event->setProtocol($protocol);
         $event->onRequest($req, $resp);
 
     }
