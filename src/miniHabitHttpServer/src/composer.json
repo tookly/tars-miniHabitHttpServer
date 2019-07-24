@@ -1,0 +1,21 @@
+{
+  "name" : "miniHabit",
+  "description": "tars http server for miniHabit",
+  "require": {
+    "phptars/tars-server": "~0.2.0",
+    "phptars/tars-deploy": "~0.1.0",
+    "phptars/tars2php": "~0.1.0",
+    "phptars/tars-log": "~0.1.0",
+    "ext-zip" : ">=0.0.1",
+    "illuminate/routing": "^5.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "HttpServer\\" : "./"
+    }
+  },
+  "minimum-stability": "stable",
+  "scripts" : {
+    "deploy" : "\\Tars\\deploy\\Deploy::run"
+  }
+}

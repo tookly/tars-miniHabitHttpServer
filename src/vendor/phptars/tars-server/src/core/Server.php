@@ -34,7 +34,7 @@ class Server
 
     protected $application;
     protected $serverName = '';
-    protected $routeName = 'Default';
+    protected $routeName = 'default';
     protected $protocolName = 'tars';
 
     protected $host = '0.0.0.0';
