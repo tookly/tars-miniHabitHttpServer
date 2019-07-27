@@ -121,7 +121,7 @@ class TarsPlatform
             ];
             $msgBody = [
                 'policy' => 'Avg',
-                'value' => isset($matches[0][0]) ? (int)$matches[0][0] : 0,
+                'value' => $matches[0][0]
             ];
             $msgHeadArr[] = $msgHead;
             $msgBodyArr[] = $msgBody;
@@ -136,7 +136,7 @@ class TarsPlatform
             ];
             $msgBody = [
                 'policy' => 'Avg',
-                'value' => isset($serverMemInfo[0]) ? (int)$serverMemInfo[0] : 0
+                'value' => $serverMemInfo[0]
             ];
             $msgHeadArr[] = $msgHead;
             $msgBodyArr[] = $msgBody;
@@ -153,7 +153,7 @@ class TarsPlatform
                 ];
                 $msgBody = [
                     'policy' => 'Avg',
-                    'value' => (int)$cpuUsage
+                    'value' => $cpuUsage
                 ];
                 $msgHeadArr[] = $msgHead;
                 $msgBodyArr[] = $msgBody;
@@ -169,7 +169,7 @@ class TarsPlatform
             ];
             $msgBody = [
                 'policy' => 'Avg',
-                'value' => isset($swooleWorkerNum[0]) ? $swooleWorkerNum[0] : 0
+                'value' => $swooleWorkerNum[0]
             ];
             $msgHeadArr[] = $msgHead;
             $msgBodyArr[] = $msgBody;
@@ -191,7 +191,7 @@ class TarsPlatform
             ];
             $msgBody = [
                 'policy' => 'Avg',
-                'value' => isset($statArr[0]) ? (int)$statArr[0] : 0
+                'value' => $statArr[0]
             ];
             $msgHeadArr[] = $msgHead;
             $msgBodyArr[] = $msgBody;

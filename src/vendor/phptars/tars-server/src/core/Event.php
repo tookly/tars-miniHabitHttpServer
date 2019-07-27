@@ -13,7 +13,6 @@ use Tars\Code;
 
 class Event
 {
-    /** @var Protocol $protocol */
     protected $protocol;
     protected $basePath;
     protected $tarsConfig;
@@ -83,33 +82,9 @@ class Event
         if ($request->data['server']['request_uri'] == '/monitor/monitor') {
             $response->header('Content-Type', 'application/json');
             $response->send("{'code':0}");
-
             return;
         }
-        $namespaceName = $request->namespaceName;
-
-        $route = $this->protocol->route($request, $response);
-        if (!$route) {
-            $class = $namespaceName . 'controller\IndexController';
-            $fun = 'actionIndex';
-        } else {
-            $class = $namespaceName . 'controller\\' . $route['class'];
-            $fun = $route['action'];
-        }
-
-        if ((!class_exists($class) || !method_exists(($class), ($fun)))) {
-            if ($response->servType == 'http') {
-                $response->status(404);
-            }
-            $response->send('not found');
-
-            return;
-        }
-        $obj = new $class($request, $response);
-        if (method_exists(($class), ('run'))) {
-            $obj->run($fun);
-        } else {
-            $obj->$fun();
-        }
+        $this->protocol->route($request, $response);
     }
+    
 }

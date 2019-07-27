@@ -20,6 +20,7 @@ use Tars\registry\RouteTable;
 use Tars\report\ServerFWrapper;
 use Tars\config\ConfigWrapper;
 use Tars\monitor\cache\SwooleTableStoreCache;
+use Tars\route\RouteFactory;
 
 class Server
 {
@@ -33,6 +34,7 @@ class Server
 
     protected $application;
     protected $serverName = '';
+    protected $routeName = 'default';
     protected $protocolName = 'tars';
 
     protected $host = '0.0.0.0';
@@ -69,9 +71,8 @@ class Server
 
         $this->setting = $this->tarsServerConfig['setting'];
 
-        if (isset($this->tarsServerConfig['protocolName'])) {
-            $this->protocolName = $this->tarsServerConfig['protocolName'];
-        }
+        $this->routeName = $this->tarsServerConfig['routeName'];
+        $this->protocolName = $this->tarsServerConfig['protocolName'];
         $this->servType = $this->tarsServerConfig['servType'];
         $this->worker_num = $this->setting['worker_num'];
     }
@@ -500,7 +501,9 @@ class Server
 
 
         $event = new Event();
-        $event->setProtocol(ProtocolFactory::getProtocol($this->protocolName));
+        $protocol = ProtocolFactory::getProtocol($this->protocolName);
+        $protocol->setRoute(RouteFactory::getRoute($this->routeName));
+        $event->setProtocol($protocol);
         $event->onRequest($req, $resp);
 
     }

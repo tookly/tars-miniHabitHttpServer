@@ -12,7 +12,8 @@
   },
   "autoload": {
     "psr-4": {
-      "HttpServer\\" : "./"
+      "HttpServer\\" : "./",
+      "App\\": "./app/"
     }
   },
   "minimum-stability": "stable",
