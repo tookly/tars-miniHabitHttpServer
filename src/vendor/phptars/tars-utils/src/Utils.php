@@ -187,20 +187,27 @@ class Utils
                 }
             }
         }
-        // 进行一下到Swoole配置的转换
-        if(!isset($tarsServer['servType'])){
-            if ($tarsAdapters[0]['protocol'] == 'not_tars' || $tarsAdapters[0]['protocol'] == 'not_taf') {
-                $tarsServer['servType'] = 'http';
-            } else {
-                $tarsServer['servType'] = 'tcp';
+
+        //把not_tars协议的排序到最前面
+        usort($tarsAdapters, function ($rowOne, $rowTwo) {
+            if ($rowOne['protocol'] == 'not_tars' || $rowOne['protocol'] == 'not_taf') {
+                return -1;
             }
+            if ($rowTwo['protocol'] == 'not_tars' || $rowTwo['protocol'] == 'not_taf') {
+                return 1;
+            }
+            return -1;
+        });
+
+        foreach ($tarsAdapters as $key => $tarsAdapter) {
+            $tmp = self::getEndpointInfo($tarsAdapter['endpoint']);
+            $tarsServer['listen'][] = $tmp;
+            $tarsAdapters[$key]['listen'] = $tmp;
+            $tarsAdapters[$key]['objName'] = explode('.', $tarsAdapter['servant'])[2];
         }
 
-
-        $tarsServer['listen'][] = self::getEndpointInfo($tarsAdapters[0]['endpoint']);
-
         $tarsServer['entrance'] = isset($tarsServer['entrance']) ? $tarsServer['entrance'] : $tarsServer['basepath'].'src/index.php';
-        $setting['worker_num'] = $tarsAdapters[0]['threads'];
+        $setting['worker_num'] = max(array_column($tarsAdapters, 'threads'));
         $setting['task_worker_num'] = $tarsServer['task_worker_num'];
         $setting['dispatch_mode'] = $tarsServer['dispatch_mode'];
         $setting['daemonize'] = $tarsServer['daemonize'];

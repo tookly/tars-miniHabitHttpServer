@@ -18,10 +18,9 @@ class ProtocolFactory
             return new TARSProtocol();
         } elseif ($protocolName == 'json') {
             return new JSONProtocol();
-        } elseif ($protocolName == 'http') {
-            return new HTTPProtocol();
         } else {
             $protocolIns = 'Tars\\protocol\\' . strtoupper($protocolName) . 'Protocol';
+
             return new $protocolIns();
         }
     }
