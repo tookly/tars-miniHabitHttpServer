@@ -16,6 +16,7 @@ class TargetController extends Controller
     const TARGET_KEY = 'HASH:TARGET:%s';
     const TARGET_NOTE_KEY = 'ZSET:TARGET:NOTE:%s';
     const TARGET_SIGN_KEY = 'ZSET:TARGET:SIGN:%s';
+    const TARGET_SIGN_WEEK_KEY = 'ZSET:TARGET:WEEK:SIGN:%s';
     const TARGET_SIGN_LOG_KEY = 'LIST:TARGET:SIGN:LOG:%s:%s';
     
     /**
@@ -35,11 +36,12 @@ class TargetController extends Controller
     {
         $data['targetId'] = $this->getPost('targetId', 1);
         $data['target'] = $this->getPost('target', '');
+        $data['dateline'] = time();
         if (empty($data['target']) || empty($data['targetId'])) {
-            $this->sendParamErr();
+            return $this->sendParamErr();
         }
         Redis::instance()->hMSet(sprintf(self::TARGET_KEY, $data['targetId']), $data);
-        $this->sendSuccess($data);
+        return $this->sendSuccess($data);
     }
     
     /**
@@ -74,7 +76,11 @@ class TargetController extends Controller
         $dateline = time();
         $line = json_encode(['note' => $note, 'dateline' => $dateline]);
         Redis::instance()->zAdd(sprintf(self::TARGET_NOTE_KEY, $targetId), $dateline, $line);
-        $this->sendSuccess();
+        $data = [
+            "dateline" => $dateline,
+            "value" => $note,
+        ];
+        $this->sendSuccess($data);
     }
     
     /**
@@ -89,6 +95,7 @@ class TargetController extends Controller
         }
         $date = date('Ymd', time());
         $data['count'] = Redis::instance()->zIncrBy(sprintf(self::TARGET_SIGN_KEY, $targetId), $unit, $date);
+        Redis::instance()->zIncrBy(sprintf(self::TARGET_SIGN_WEEK_KEY, $targetId), $unit, date('YW'));
         
         $log['targetId'] = $targetId;
         $log['unit'] = $unit;
@@ -104,14 +111,34 @@ class TargetController extends Controller
     public function actionStatistics()
     {
         $targetId = $this->getGet('targetId', 1);
+        
+        // 处理日打卡数据
         $end = time();
-        $start = $end - 86400 * 20;
-        $data = [];
-        for($i = $end; $i >= $start; $i = $i - 86400) {
-            $tmp['date'] = date('Ymd', $i);
-            $tmp['times'] = (int)Redis::instance()->zScore(sprintf(self::TARGET_SIGN_KEY, $targetId), $tmp['date']);
-            $data[] = $tmp;
+        $start = $end - 86400 * 7;
+        $day = [];
+        for($i = $end; $i > $start; $i = $i - 86400) {
+            $tmp['categories'] = date('m.d', $i);
+            $tmp['data'] = (int)Redis::instance()->zScore(sprintf(self::TARGET_SIGN_KEY, $targetId), date('Ymd', $i));
+            $day[] = $tmp;
         }
+        $data['day']['title'] = '日打卡';
+        $data['day']['data'] = array_column($day, 'data');
+        $data['day']['categories'] = array_column($day, 'categories');
+    
+        $target = Redis::instance()->hGetAll(sprintf(self::TARGET_KEY, $targetId));
+        $startWeek = date('YW', $target['dateline']);
+        
+        $end = date('YW');
+        $start = $end - 3;
+        $week = [];
+        for($i = $end; $i > $start; $i = $i - 1) {
+            $tmp['categories'] = 'W' . (int)($i - $startWeek + 1);
+            $tmp['data'] = (int)Redis::instance()->zScore(sprintf(self::TARGET_SIGN_WEEK_KEY, $targetId), $i);
+            $week[] = $tmp;
+        }
+        $data['week']['title'] = '周打卡';
+        $data['week']['data'] = array_column($week, 'data');
+        $data['week']['categories'] = array_column($week, 'categories');
         $this->sendSuccess($data);
     }
     
