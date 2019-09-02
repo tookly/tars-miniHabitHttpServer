@@ -14,6 +14,7 @@ class Code
     const SUCCESS = [0, 'success'];
     const FAIL = [1, 'fail'];
     const ERROR_PARAMS = [2, 'error params'];
+    const LOGIN_FAILED = [3, 'login failed'];
     
     // 1000 - 业务提示码
     

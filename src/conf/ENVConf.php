@@ -48,7 +48,7 @@ class ENVConf
         return App::getTarsConfig();
     }
     
-    public static  function getRedisConf($name)
+    public static function getRedisConf($name)
     {
         $redisConfs = [
             'storage' => [
@@ -59,6 +59,21 @@ class ENVConf
             ]
         ];
         return $redisConfs[$name] ?? [];
+    }
+   
+    public static function getDatabaseConf($name = 'habit')
+    {
+        $databaseConf = [
+            'habit' => [
+                'database_type' => 'mysql',
+                'database_name' => 'db_habit',
+                'server' => 'localhost',
+                'username' => 'root',
+                'password' => 'root@appinside',
+                'charset' => 'utf8',
+            ]
+        ];
+        return $databaseConf[$name] ?? [];
     }
     
 }

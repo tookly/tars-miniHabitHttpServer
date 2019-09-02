@@ -8,8 +8,10 @@
 
 namespace HttpServer\controller;
 
+use HttpServer\component\HabitException;
 use HttpServer\component\Redis;
 use HttpServer\component\Controller;
+use HttpServer\conf\Code;
 
 class TargetController extends Controller
 {
@@ -26,7 +28,7 @@ class TargetController extends Controller
     {
         $targetId = $this->getGet('targetId', 1);
         $data = Redis::instance()->hGetAll(sprintf(self::TARGET_KEY, $targetId)) ?: null;
-        $this->sendSuccess($data);
+        return $data;
     }
     
     /**
@@ -38,10 +40,10 @@ class TargetController extends Controller
         $data['target'] = $this->getPost('target', '');
         $data['dateline'] = time();
         if (empty($data['target']) || empty($data['targetId'])) {
-            return $this->sendParamErr();
+            throw new HabitException(Code::ERROR_PARAMS);
         }
         Redis::instance()->hMSet(sprintf(self::TARGET_KEY, $data['targetId']), $data);
-        return $this->sendSuccess($data);
+        return $data;
     }
     
     /**
@@ -60,7 +62,7 @@ class TargetController extends Controller
             $notes[] = $note;
         }
         $data['notes'] = $notes;
-        $this->sendSuccess($data);
+        return $data;
     }
     
     /**
@@ -71,7 +73,7 @@ class TargetController extends Controller
         $targetId = $this->getPost('targetId', 1);
         $note = $this->getPost('note', '');
         if (empty($note) || empty($targetId)) {
-            $this->sendParamErr();
+            throw new HabitException(Code::ERROR_PARAMS);
         }
         $dateline = time();
         $line = json_encode(['note' => $note, 'dateline' => $dateline]);
@@ -80,7 +82,7 @@ class TargetController extends Controller
             "dateline" => $dateline,
             "value" => $note,
         ];
-        $this->sendSuccess($data);
+        return $data;
     }
     
     /**
@@ -91,7 +93,7 @@ class TargetController extends Controller
         $targetId = $this->getPost('targetId', 1);
         $unit = $this->getPost('unit', 1);
         if (empty($targetId) || empty($unit)) {
-            $this->sendParamErr();
+            throw new HabitException(Code::ERROR_PARAMS);
         }
         $date = date('Ymd', time());
         $data['count'] = Redis::instance()->zIncrBy(sprintf(self::TARGET_SIGN_KEY, $targetId), $unit, $date);
@@ -101,8 +103,8 @@ class TargetController extends Controller
         $log['unit'] = $unit;
         $log['dateline'] = time();
         Redis::instance()->lpush(sprintf(self::TARGET_SIGN_LOG_KEY, $targetId, $date), json_encode($log));
-        
-        $this->sendSuccess($data);
+       
+        return $data;
     }
     
     /**
@@ -139,7 +141,7 @@ class TargetController extends Controller
         $data['week']['title'] = '周打卡';
         $data['week']['data'] = array_column($week, 'data');
         $data['week']['categories'] = array_column($week, 'categories');
-        $this->sendSuccess($data);
+        return $data;
     }
     
 }

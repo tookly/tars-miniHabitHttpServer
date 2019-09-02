@@ -11,7 +11,7 @@ namespace HttpServer\component;
 use Tars\core\Request;
 use Tars\core\Response;
 use HttpServer\conf\Code;
-use User;
+use UserModel;
 
 class Controller
 {
@@ -39,7 +39,7 @@ class Controller
         }
         
         // 缓存用户信息
-        $this->user = new User();
+        $this->user = new UserModel();
         if (isset($this->request->data['header']) && isset($this->request->data['header']['x-real-ip'])) {
             $this->user->clientIP = $this->request->data['header']['x-real-ip'];
         }
@@ -104,39 +104,41 @@ class Controller
         return $this->postData[$key] ?? $default;
     }
     
-    public function send($res)
-    {
-        $this->header('Content-Type', 'application/json');
-        if (is_array($res['code'])) {
-            $code = $res['code'];
-            list($res['code'], $res['message']) = $code;
-        }
-        $this->response->send(json_encode($res));
-    }
-    
     public function sendSuccess($data = [])
     {
-        $res['code'] = Code::SUCCESS;
-        $res['data'] = $data;
-        return $res;
+        $data['data'] = $data;
+        list($data['code'], $data['message']) = Code::SUCCESS;
+        $this->send($data);
     }
     
-    public function sendParamErr($data = [])
+    public function sendByException($data, \Exception $e)
     {
-        $res['code'] = Code::ERROR_PARAMS;
-        $res['data'] = $data;
-        return $res;
+        $data['code'] = $e->getCode();
+        $data['message'] = $e->getMessage();
+        $data['data'] = $data;
+        $this->send($data);
     }
     
+    public function send($data)
+    {
+        $this->header('Content-Type', 'application/json');
+        $this->response->send(json_encode($data));
+    }
+    
+    /**
+     * @param $actionName
+     * @throws \Exception
+     */
     public function run($actionName)
     {
+        $data['isLogin'] = UserModel::verify($this->cookies, $this->user);
+        $data['user'] = $this->user->getBasicUserInfo();
         try {
-            User::verify($this->cookies, $this->user, $isLogin);
             $result = $this->$actionName();
-            $result['data']['user'] = $this->user;
-            $this->send($result);
+            $data['data'] = $result;
+            $this->sendSuccess($data);
         } catch (\Exception $e) {
-            $this->send($e);
+            $this->sendByException($data, $e);
         }
     }
     
