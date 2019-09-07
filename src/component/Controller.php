@@ -11,7 +11,7 @@ namespace HttpServer\component;
 use Tars\core\Request;
 use Tars\core\Response;
 use HttpServer\conf\Code;
-use UserModel;
+use HttpServer\model\UserModel;
 
 class Controller
 {
@@ -104,18 +104,16 @@ class Controller
         return $this->postData[$key] ?? $default;
     }
     
-    public function sendSuccess($data = [])
+    public function sendSuccess($data = null)
     {
-        $data['data'] = $data;
         list($data['code'], $data['message']) = Code::SUCCESS;
         $this->send($data);
     }
     
-    public function sendByException($data, \Exception $e)
+    public function sendByException(\Exception $e, $data = null)
     {
         $data['code'] = $e->getCode();
         $data['message'] = $e->getMessage();
-        $data['data'] = $data;
         $this->send($data);
     }
     
@@ -125,10 +123,6 @@ class Controller
         $this->response->send(json_encode($data));
     }
     
-    /**
-     * @param $actionName
-     * @throws \Exception
-     */
     public function run($actionName)
     {
         $data['isLogin'] = UserModel::verify($this->cookies, $this->user);
@@ -138,7 +132,7 @@ class Controller
             $data['data'] = $result;
             $this->sendSuccess($data);
         } catch (\Exception $e) {
-            $this->sendByException($data, $e);
+            $this->sendByException($e, $data);
         }
     }
     

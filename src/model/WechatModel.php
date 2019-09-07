@@ -1,6 +1,6 @@
 <?php
 
-namespace model;
+namespace HttpServer\model;
 
 use common\HttpUtil;
 use HttpServer\component\Model;

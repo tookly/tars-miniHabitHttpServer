@@ -6,11 +6,12 @@
  * Time: 下午7:09
  */
 
+namespace HttpServer\model;
+
 use HttpServer\component\HabitException;
 use HttpServer\component\Model;
 use HttpServer\component\Redis;
 use HttpServer\conf\Code;
-use model\WechatModel;
 
 class UserModel extends Model
 {
