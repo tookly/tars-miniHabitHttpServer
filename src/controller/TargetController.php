@@ -20,6 +20,11 @@ class TargetController extends Controller
     const TARGET_SIGN_KEY = 'ZSET:TARGET:SIGN:%s';
     const TARGET_SIGN_WEEK_KEY = 'ZSET:TARGET:WEEK:SIGN:%s';
     const TARGET_SIGN_LOG_KEY = 'LIST:TARGET:SIGN:LOG:%s:%s';
+
+    public function actionIndex()
+    {
+        return Redis::instance()->hGetAll(sprintf(self::TARGET_KEY, (int)$this->user->userId)) ?: null;
+    }
     
     /**
      * @throws \exception

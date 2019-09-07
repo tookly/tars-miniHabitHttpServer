@@ -9,17 +9,18 @@
 namespace HttpServer\controller;
 
 use HttpServer\component\Controller;
-use UserModel;
+use HttpServer\model\UserModel;
 
 class UserController extends Controller
 {
     
     /**
-     * @throws \exception
+     * @throws \HttpServer\component\HabitException
+     * @throws \HttpServer\model\ReflectionException
      */
     public function actionLogin()
     {
-        $code = $this->getGet('code', '');
+        $code = $this->getPost('code', '');
         list($user, $session) = UserModel::login($code);
         UserModel::genUser($this->user, $user);
         $this->response->cookie("session", $session, time() + (730 * 24 * 3600), '/', '.snowfifi.com');

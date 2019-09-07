@@ -2,9 +2,9 @@
 
 namespace HttpServer\model;
 
-use common\HttpUtil;
 use HttpServer\component\Model;
 use HttpServer\conf\Code;
+use HttpServer\component\Http;
 
 class WechatModel extends Model
 {
@@ -232,7 +232,7 @@ class WechatModel extends Model
             'js_code' => $code,
             'grant_type' => 'authorization_code',
         ];
-        $ret = HttpUtil::get(self::$code2session, $data);
+        $ret = Http::get(self::$code2session, $data);
         $ret = json_decode($ret, true);
         if (empty($ret) || !empty($ret['errcode'])) {
             $code = $ret['errcode'] ?? Code::FAIL;

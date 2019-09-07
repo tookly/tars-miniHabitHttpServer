@@ -1,8 +1,8 @@
 <?php
 
-namespace common;
+namespace HttpServer\component;
 
-class HttpUtil
+class Http
 {
     public static $connect_timeout_ms = 1000;
     public static $timeout_ms = 3000;
