@@ -8,7 +8,8 @@
     "phptars/tars-log": "~0.1.0",
     "ext-zip" : ">=0.0.1",
     "illuminate/routing": "~5.5.0",
-    "illuminate/events": "~5.5.0"
+    "illuminate/events": "~5.5.0",
+    "catfan/medoo": "^1.7"
   },
   "autoload": {
     "psr-4": {

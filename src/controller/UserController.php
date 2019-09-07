@@ -8,9 +8,7 @@
 
 namespace HttpServer\controller;
 
-use HttpServer\component\Redis;
 use HttpServer\component\Controller;
-use model\WechatModel;
 use UserModel;
 
 class UserController extends Controller
