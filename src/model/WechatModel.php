@@ -2,6 +2,7 @@
 
 namespace HttpServer\model;
 
+use HttpServer\component\HabitException;
 use HttpServer\component\Model;
 use HttpServer\conf\Code;
 use HttpServer\component\Http;
@@ -235,10 +236,8 @@ class WechatModel extends Model
         $ret = Http::get(self::$code2session, $data);
         $ret = json_decode($ret, true);
         if (empty($ret) || !empty($ret['errcode'])) {
-            $code = $ret['errcode'] ?? Code::FAIL;
-            $message = $ret['errmsg'] ?? '';
 //            self::logError('get openId failed. ' . json_encode($ret), $ret['errcode'], __METHOD__);
-            throw new \Exception($code, $message);
+            throw new HabitException([$ret['errcode'], $ret['errmsg']]);
         }
         return $ret ?: [];
     }

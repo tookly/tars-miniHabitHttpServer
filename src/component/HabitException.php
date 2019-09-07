@@ -15,7 +15,7 @@ class HabitException extends \Exception
     {
         list($code, $message) = $info;
         $message = $newMessage ?: $message;
-        parent::__construct($code, $message);
+        parent::__construct($message, $code);
     }
     
 }

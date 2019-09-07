@@ -90,11 +90,8 @@ class UserModel extends Model
         if (empty($code)) {
             throw new HabitException(Code::LOGIN_FAILED);
         }
+        $info = WechatModel::getOpenIdByCode($code);
         try {
-            $info = WechatModel::getOpenIdByCode($code);
-            if (!$info || empty($info['openId'])) {
-                throw new HabitException(Code::LOGIN_FAILED);
-            }
             $user = self::instance()->get("user", "openId", ["openId" => $info['openId']]);
             if (empty($user)) {
                 $userInfo['openId'] = $info['openId'];

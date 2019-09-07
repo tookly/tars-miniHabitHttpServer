@@ -12,6 +12,7 @@ use HttpServer\component\HabitException;
 use HttpServer\component\Redis;
 use HttpServer\component\Controller;
 use HttpServer\conf\Code;
+use HttpServer\model\TargetModel;
 
 class TargetController extends Controller
 {
@@ -23,7 +24,7 @@ class TargetController extends Controller
 
     public function actionIndex()
     {
-        return Redis::instance()->hGetAll(sprintf(self::TARGET_KEY, (int)$this->user->userId)) ?: null;
+        return TargetModel::getInfo($this->user);
     }
     
     /**

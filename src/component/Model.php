@@ -8,6 +8,7 @@
 
 namespace HttpServer\component;
 
+use HttpServer\conf\Code;
 use HttpServer\conf\ENVConf;
 use Medoo\Medoo;
 
@@ -24,7 +25,7 @@ class Model
     {
         $config = ENVConf::getDatabaseConf($name);
         if (empty($config)) {
-            throw new \Exception(1, 'redis config not exist');
+            throw new HabitException(Code::FAIL, 'database config not exist');
         }
         return $config;
     }
@@ -34,7 +35,7 @@ class Model
      * @return mixed
      * @throws \Exception
      */
-    public static function instance($name = 'storage')
+    public static function instance($name = 'habit')
     {
         if (empty(self::$instance[$name])) {
             $config = self::getConfig($name);

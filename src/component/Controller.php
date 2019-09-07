@@ -129,7 +129,7 @@ class Controller
         $data['user'] = $this->user->getBasicUserInfo();
         try {
             $result = $this->$actionName();
-            $data['data'] = $result;
+            $data['data'] = $result ?? null;
             $this->sendSuccess($data);
         } catch (\Exception $e) {
             $this->sendByException($e, $data);
