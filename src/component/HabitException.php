@@ -13,7 +13,12 @@ class HabitException extends \Exception
     
     public function __construct($info, $newMessage = '')
     {
-        list($code, $message) = $info;
+        if (is_array($info)) {
+            list($code, $message) = $info;
+        } else {
+            $code = $info;
+            $message = '未定义异常';
+        }
         $message = $newMessage ?: $message;
         parent::__construct($message, $code);
     }

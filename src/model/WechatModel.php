@@ -239,7 +239,7 @@ class WechatModel extends Model
 //            self::logError('get openId failed. ' . json_encode($ret), $ret['errcode'], __METHOD__);
             throw new HabitException([$ret['errcode'], $ret['errmsg']]);
         }
-        return $ret ?: [];
+        return $ret;
     }
     
 }

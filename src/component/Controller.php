@@ -12,6 +12,7 @@ use Tars\core\Request;
 use Tars\core\Response;
 use HttpServer\conf\Code;
 use HttpServer\model\UserModel;
+use Tars\Utils;
 
 class Controller
 {
@@ -110,7 +111,7 @@ class Controller
         $this->send($data);
     }
     
-    public function sendByException(\Exception $e, $data = null)
+    public function sendByException(\Exception $e)
     {
         $data['code'] = $e->getCode();
         $data['message'] = $e->getMessage();
@@ -123,16 +124,21 @@ class Controller
         $this->response->send(json_encode($data));
     }
     
+    /**
+     * @param $actionName
+     * @throws \Exception
+     * @throws \ReflectionException
+     */
     public function run($actionName)
     {
-        $data['isLogin'] = UserModel::verify($this->cookies, $this->user);
-        $data['user'] = $this->user->getBasicUserInfo();
+        UserModel::verify($this->cookies, $this->user);
         try {
             $result = $this->$actionName();
+            $data['user'] = $this->user->getBasicUserInfo();
             $data['data'] = $result ?? null;
             $this->sendSuccess($data);
         } catch (\Exception $e) {
-            $this->sendByException($e, $data);
+            $this->sendByException($e);
         }
     }
     

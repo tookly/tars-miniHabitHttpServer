@@ -13,6 +13,11 @@ use HttpServer\component\Model;
 use HttpServer\component\Redis;
 use HttpServer\conf\Code;
 
+/**
+ * Class UserModel
+ * 三个user：UserModel 缓存、DB中的User 落地、BasicUserInfo 返回前端
+ * @package HttpServer\model
+ */
 class UserModel extends Model
 {
     const USER_SSO_SESSION = "STR:SSO:%s";
@@ -42,7 +47,7 @@ class UserModel extends Model
     /**
      * @param UserModel $user
      * @param $info
-     * @throws ReflectionException
+     * @throws \ReflectionException
      */
     public static function genUser(UserModel &$user, $info)
     {
@@ -60,7 +65,8 @@ class UserModel extends Model
      * @param $cookie
      * @param UserModel $user
      * @return bool
-     * @throws Exception
+     * @throws \Exception
+     * @throws \ReflectionException
      */
     public static function verify($cookie, UserModel &$user)
     {
@@ -81,6 +87,16 @@ class UserModel extends Model
     }
     
     /**
+     * @param UserModel $user
+     * @throws \Exception
+     */
+    public static function setSession($user)
+    {
+        $session = md5(time() . "_" . mt_rand()) . '_' . uniqid() . '_' . $user->userId;
+        Redis::instance()->set(sprintf(UserModel::USER_SSO_SESSION, $session), json_encode($user));
+    }
+    
+    /**
      * @param $code
      * @throws HabitException
      * @return array
@@ -94,19 +110,18 @@ class UserModel extends Model
         try {
             $user = self::instance()->get("user", "openId", ["openId" => $info['openId']]);
             if (empty($user)) {
-                $userInfo['openId'] = $info['openId'];
-                $userInfo['nickName'] = $info['nickName'];
-                $userInfo['avatarUrl'] = $info['avatarUrl'];
-                $userInfo['gender'] = $info['gender'];
-                $userInfo['country'] = $info['country'];
-                $userInfo['province'] = $info['province'];
-                $userInfo['city'] = $info['city'];
-                $userInfo['language'] = $info['language'];
+                $user['openId'] = $info['openId'];
+                $user['nickName'] = $info['nickName'];
+                $user['avatarUrl'] = $info['avatarUrl'];
+                $user['gender'] = $info['gender'];
+                $user['country'] = $info['country'];
+                $user['province'] = $info['province'];
+                $user['city'] = $info['city'];
+                $user['language'] = $info['language'];
                 self::instance()->insert("user", $user);
             }
-            $session = md5(time() . "_" . mt_rand()) . '_' . uniqid();
-            Redis::instance()->set(sprintf(self::USER_SSO_SESSION, json_encode($user)));
-            return [$session, $user];
+            self::setSession($user);
+            return $user;
         } catch (\Exception $e) {
             throw new HabitException(Code::LOGIN_FAILED);
         }

@@ -3,10 +3,10 @@
 namespace HttpServer\conf;
 
 /**
- * Created by PhpStorm.
- * User: chenkaiwang
- * Date: 2016/3/11
- * Time: 20:09
+ * 定义错误提示码
+ * 支持定义code和message，如 const SUCCESS = [0, 'success'];
+ * 支持仅定义code，如 const SUCCESS = 0; 此时message显示为 未定义异常
+ * message均可被Exception的message覆盖
  */
 class Code
 {
