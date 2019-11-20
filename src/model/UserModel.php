@@ -87,16 +87,6 @@ class UserModel extends Model
     }
     
     /**
-     * @param UserModel $user
-     * @throws \Exception
-     */
-    public static function setSession($user)
-    {
-        $session = md5(time() . "_" . mt_rand()) . '_' . uniqid() . '_' . $user->userId;
-        Redis::instance()->set(sprintf(UserModel::USER_SSO_SESSION, $session), json_encode($user));
-    }
-    
-    /**
      * @param $code
      * @throws HabitException
      * @return array
@@ -108,19 +98,20 @@ class UserModel extends Model
         }
         $info = WechatModel::getOpenIdByCode($code);
         try {
-            $user = self::instance()->get("user", "openId", ["openId" => $info['openId']]);
+            $user = self::instance()->get("user", "*", ["openId" => $info['openid']]);
             if (empty($user)) {
-                $user['openId'] = $info['openId'];
-                $user['nickName'] = $info['nickName'];
-                $user['avatarUrl'] = $info['avatarUrl'];
-                $user['gender'] = $info['gender'];
-                $user['country'] = $info['country'];
-                $user['province'] = $info['province'];
-                $user['city'] = $info['city'];
-                $user['language'] = $info['language'];
+                $userInfo['openId'] = $info['openid'];
+//                $user['sessionKey'] = $info['session_key'];
+//                $user['nickName'] = $info['nickName'];
+//                $user['avatarUrl'] = $info['avatarUrl'];
+//                $user['gender'] = $info['gender'];
+//                $user['country'] = $info['country'];
+//                $user['province'] = $info['province'];
+//                $user['city'] = $info['city'];
+//                $user['language'] = $info['language'];
                 self::instance()->insert("user", $user);
+                $user['userId'] = self::instance()->id();
             }
-            self::setSession($user);
             return $user;
         } catch (\Exception $e) {
             throw new HabitException(Code::LOGIN_FAILED);

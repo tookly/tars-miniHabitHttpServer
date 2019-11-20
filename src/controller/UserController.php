@@ -15,13 +15,14 @@ class UserController extends Controller
 {
     
     /**
+     * @throws \Exception
      * @throws \HttpServer\component\HabitException
-     * @throws \ReflectionException
      */
     public function actionLogin()
     {
         $code = $this->getPost('code', '');
-        UserModel::genUser($this->user, UserModel::login($code));
+        $user = UserModel::login($code);
+        $this->setSession($user);
     }
     
 }

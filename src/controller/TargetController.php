@@ -30,19 +30,12 @@ class TargetController extends Controller
     /**
      * @throws \exception
      */
-    public function actionInfo()
-    {
-        $targetId = $this->getGet('targetId', 1);
-        $data = Redis::instance()->hGetAll(sprintf(self::TARGET_KEY, $targetId)) ?: null;
-        return $data;
-    }
-    
-    /**
-     * @throws \exception
-     */
     public function actionSet()
     {
-        $data['targetId'] = $this->getPost('targetId', 1);
+        if (!$this->isLogin()) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+        $data['targetId'] = $this->user->userId;
         $data['target'] = $this->getPost('target', '');
         $data['dateline'] = time();
         if (empty($data['target']) || empty($data['targetId'])) {
@@ -57,7 +50,10 @@ class TargetController extends Controller
      */
     public function actionNotes()
     {
-        $targetId = $this->getGet('targetId', 1);
+        if (!$this->isLogin()) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+        $targetId = $this->user->userId;
         $lines = Redis::instance()->zRevRange(sprintf(self::TARGET_NOTE_KEY, $targetId), 0, -1, true);
         $notes = [];
         foreach ($lines as $line => $dateline) {
@@ -76,7 +72,10 @@ class TargetController extends Controller
      */
     public function actionNote()
     {
-        $targetId = $this->getPost('targetId', 1);
+        if (!$this->isLogin()) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+        $targetId = $this->user->userId;
         $note = $this->getPost('note', '');
         if (empty($note) || empty($targetId)) {
             throw new HabitException(Code::ERROR_PARAMS);
@@ -96,7 +95,10 @@ class TargetController extends Controller
      */
     public function actionSign()
     {
-        $targetId = $this->getPost('targetId', 1);
+        if (!$this->isLogin()) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+        $targetId = $this->user->userId;
         $unit = $this->getPost('unit', 1);
         if (empty($targetId) || empty($unit)) {
             throw new HabitException(Code::ERROR_PARAMS);
@@ -114,11 +116,15 @@ class TargetController extends Controller
     }
     
     /**
+     * 主态 和 客态
      * @throws \Exception
      */
     public function actionStatistics()
     {
-        $targetId = $this->getGet('targetId', 1);
+        if (!$this->isLogin()) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+        $targetId = $this->user->userId;
         
         // 处理日打卡数据
         $end = time();

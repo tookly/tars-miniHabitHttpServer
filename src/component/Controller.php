@@ -125,6 +125,26 @@ class Controller
     }
     
     /**
+     * @param $user
+     * @throws \Exception
+     */
+    public function setSession($user)
+    {
+        $session = md5(time() . "_" . mt_rand() . "_" . $user['userId']) . '_' . uniqid();
+        Redis::instance()->set(sprintf(UserModel::USER_SSO_SESSION, $session), json_encode($user));
+        $this->response->cookie("session", $session, time() + (730 * 24 * 3600), '/', '.snowfifi.com');
+        return UserModel::genUser($this->user, $user);
+    }
+    
+    public function isLogin()
+    {
+        if ($this->user->userId > 0) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
      * @param $actionName
      * @throws \Exception
      * @throws \ReflectionException
