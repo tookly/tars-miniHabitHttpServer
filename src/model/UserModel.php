@@ -109,7 +109,7 @@ class UserModel extends Model
 //                $user['province'] = $info['province'];
 //                $user['city'] = $info['city'];
 //                $user['language'] = $info['language'];
-                self::instance()->insert("user", $user);
+                self::instance()->insert("user", $userInfo);
                 $user['userId'] = self::instance()->id();
             }
             return $user;

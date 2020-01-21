@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: liangchen
- * Date: 2018/5/8
- * Time: 下午2:42.
+ * User: chengxiaoli
+ * Date: 2019/12/31
+ * Time: 下午14:30.
  */
 
 namespace HttpServer\controller;
@@ -11,18 +10,14 @@ namespace HttpServer\controller;
 use HttpServer\component\Controller;
 use HttpServer\model\UserModel;
 
-class UserController extends Controller
+class AuthController extends Controller
 {
     
-    /**
-     * @throws \Exception
-     * @throws \HttpServer\component\HabitException
-     */
     public function actionLogin()
     {
         $code = $this->getPost('code', '');
         $user = UserModel::login($code);
-        $this->setSession($user);
+        return $this->setSession($user);
     }
     
 }

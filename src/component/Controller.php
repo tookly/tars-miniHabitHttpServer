@@ -135,6 +135,21 @@ class Controller
         $this->response->cookie("session", $session, time() + (730 * 24 * 3600), '/', '.snowfifi.com');
         return UserModel::genUser($this->user, $user);
     }
+
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * @throws HabitException
+     */
+    public function checkLogin()
+    {
+        if ($this->user->userId <= 0) {
+            throw new HabitException(Code::LOGIN_ERROR);
+        }
+    }
     
     public function isLogin()
     {
