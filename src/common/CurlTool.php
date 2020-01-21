@@ -1,8 +1,8 @@
 <?php
 
-namespace HttpServer\component;
+namespace HttpServer\common;
 
-class Http
+class CurlTool
 {
     public static $connect_timeout_ms = 1000;
     public static $timeout_ms = 3000;

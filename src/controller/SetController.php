@@ -11,6 +11,7 @@ use HttpServer\component\HabitException;
 use HttpServer\component\Controller;
 use HttpServer\conf\Code;
 use HttpServer\service\TargetService;
+use HttpServer\component\Auth;
 
 class SetController extends Controller
 {
@@ -19,7 +20,7 @@ class SetController extends Controller
      */
     public function actionSet()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $target = $this->getPost('target', '');
         $time = $this->getPost('time', 0);
         $timeSuffix = $this->getPost('timeSuffix', '');

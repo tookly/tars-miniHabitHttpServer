@@ -12,6 +12,7 @@ use HttpServer\component\Controller;
 use HttpServer\conf\Code;
 use HttpServer\service\TaskService;
 use HttpServer\service\TimeGridService;
+use HttpServer\component\Auth;
 
 class TimeLogController extends Controller
 {
@@ -20,7 +21,7 @@ class TimeLogController extends Controller
      */
     public function actionGetDayGrid()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $data['date'] = date('Y.m.d 第W周', time());
         $data['dayGrid'] = TimeGridService::getDayGrids();
         return $data;
@@ -31,7 +32,7 @@ class TimeLogController extends Controller
      */
     public function actionFillGrids()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $grids = $this->getPost('grids', '');
         $taskId = $this->getPost('taskId', 0);
         if (empty($grids) || empty($taskId)) {
@@ -45,7 +46,7 @@ class TimeLogController extends Controller
      */
     public function actionGetTasks()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         return TaskService::getLists();
     }
 
@@ -54,7 +55,7 @@ class TimeLogController extends Controller
      */
     public function actionFinishTask()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $taskId = $this->getPost('taskId', 0);
         if (empty($taskId)) {
             throw new HabitException(Code::ERROR_PARAMS);
@@ -67,7 +68,7 @@ class TimeLogController extends Controller
      */
     public function actionAddTask()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $task = $this->getPost('task', '');
         $type = $this->getPost('type', 0);
         if (empty($task) || empty($type)) {
@@ -75,4 +76,5 @@ class TimeLogController extends Controller
         }
         return TaskService::add($task, $type);
     }
+
 }

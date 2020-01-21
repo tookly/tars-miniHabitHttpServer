@@ -57,7 +57,7 @@ class ComposerStaticInit22b0476540b766ed6069374d5ff7ada9
             'Illuminate\\Session\\' => 19,
             'Illuminate\\Routing\\' => 19,
             'Illuminate\\Pipeline\\' => 20,
-            'Illuminate\\Http\\' => 16,
+            'Illuminate\\CurlTool\\' => 16,
             'Illuminate\\Filesystem\\' => 22,
             'Illuminate\\Events\\' => 18,
             'Illuminate\\Contracts\\' => 21,
@@ -195,7 +195,7 @@ class ComposerStaticInit22b0476540b766ed6069374d5ff7ada9
         array (
             0 => __DIR__ . '/..' . '/illuminate/pipeline',
         ),
-        'Illuminate\\Http\\' => 
+        'Illuminate\\CurlTool\\' =>
         array (
             0 => __DIR__ . '/..' . '/illuminate/http',
         ),

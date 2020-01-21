@@ -8,16 +8,18 @@
 namespace HttpServer\controller;
 
 use HttpServer\component\Controller;
-use HttpServer\model\UserModel;
+use HttpServer\component\Auth;
 
 class AuthController extends Controller
 {
-    
+
+    /**
+     * @throws \HttpServer\component\HabitException
+     */
     public function actionLogin()
     {
         $code = $this->getPost('code', '');
-        $user = UserModel::login($code);
-        return $this->setSession($user);
+        Auth::login($code);
     }
     
 }

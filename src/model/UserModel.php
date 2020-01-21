@@ -10,7 +10,6 @@ namespace HttpServer\model;
 
 use HttpServer\component\HabitException;
 use HttpServer\component\Model;
-use HttpServer\component\Redis;
 use HttpServer\conf\Code;
 
 /**
@@ -35,7 +34,7 @@ class UserModel extends Model
     public $dateline;           // 用户最近一次登录小程序的openId的更新时间
     public $code;               // 起点读书小程序授权code 存在有效期，失效需要向前端重新获取
     
-    public function getBasicUserInfo()
+    public function getBasicInfo()
     {
         return [
             'userId' => $this->userId,
@@ -45,6 +44,8 @@ class UserModel extends Model
     }
     
     /**
+     * 使用反射并不明智
+     *
      * @param UserModel $user
      * @param $info
      * @throws \ReflectionException
@@ -62,36 +63,11 @@ class UserModel extends Model
     }
     
     /**
-     * @param $cookie
-     * @param UserModel $user
-     * @return bool
-     * @throws \Exception
-     * @throws \ReflectionException
-     */
-    public static function verify($cookie, UserModel &$user)
-    {
-        $session = $cookie['session'] ?? '';
-        if (!$session) {
-            return false;
-        }
-        $info = Redis::instance()->get(sprintf(self::USER_SSO_SESSION, $session));
-        if (empty($info)) {
-            return false;
-        }
-        $info = json_decode($info, true);
-        self::genUser($user, $info);
-        if (empty($user->userId)) {
-            return false;
-        }
-        return true;
-    }
-    
-    /**
      * @param $code
      * @throws HabitException
      * @return array
      */
-    public static function login($code)
+    public static function getUserByCode($code)
     {
         if (empty($code)) {
             throw new HabitException(Code::LOGIN_FAILED);

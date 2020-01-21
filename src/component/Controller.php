@@ -1,46 +1,60 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: liangchen
- * Date: 2018/5/8
- * Time: 下午2:43.
- */
 
 namespace HttpServer\component;
 
+use HttpServer\model\UserModel;
 use Tars\core\Request;
 use Tars\core\Response;
 use HttpServer\conf\Code;
-use HttpServer\model\UserModel;
-use Tars\Utils;
+use Swoole\Coroutine;
 
 class Controller
 {
+    private static $controller = [];
+
     protected $request;
     protected $response;
     
-    protected $cookies;
-    protected $postData;
+    protected $cookieData;
     protected $getData;
+    protected $postData;
+
     protected $user;
-    
+
     public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
         $this->response = $response;
-        
-        // 获取请求参数
-        $this->getData = $this->request->data['get'] ?? [];
-        $this->cookies = $this->request->data['cookie'] ?? [];
-        if (isset($this->request->data['header']['content-type']) && strpos($this->request->data['header']['content-type'],
-                'json') !== false) {
-            $this->postData = json_decode($this->request->data['post'], true) ?? [];
+        $this->user = $this->initUser();
+        self::saveController($this);
+    }
+
+    public static function saveController($controller)
+    {
+        $id = Coroutine::getuid();
+        self::$controller[$id] = $controller;
+    }
+
+    /**
+     * @return Controller
+     */
+    public static function getController()
+    {
+        $id = Coroutine::getuid();
+        if (isset(self::$controller[$id])) {
+            return self::$controller[$id];
         } else {
-            $this->postData = $this->request->data['post'] ?? [];
+            return null;
         }
-        
-        // 缓存用户信息
-        $this->user = new UserModel();
+    }
+
+    /**
+     * @return UserModel
+     * @throws \ReflectionException
+     */
+    public function initUser()
+    {
+        $user = new UserModel();
         if (isset($this->request->data['header']) && isset($this->request->data['header']['x-real-ip'])) {
             $this->user->clientIP = $this->request->data['header']['x-real-ip'];
         }
@@ -50,18 +64,49 @@ class Controller
         if (isset($this->request->data['header']) && isset($this->request->data['header']['referer'])) {
             $this->user->referer = $this->request->data['header']['referer'];
         }
+        Auth::verify($this->getCookie('session'), $this->getUser());
+        return $user;
     }
-    
-    public function getResponse()
+
+    public function getUser()
     {
-        return $this->response;
+        return $this->user;
     }
-    
-    public function getRequest()
+
+    public function getGet($key, $default = null)
     {
-        return $this->request;
+        if (!isset($this->getData)) {
+            $this->getData = $this->request->data['get'] ?? [];
+        }
+        return $this->getData[$key] ?? $default;
+    }
+
+    public function getPost($key, $default = null)
+    {
+        if (!isset($this->postData)) {
+            if (isset($this->request->data['header']['content-type']) && strpos($this->request->data['header']['content-type'],
+                    'json') !== false) {
+                $this->postData = json_decode($this->request->data['post'], true) ?? [];
+            } else {
+                $this->postData = $this->request->data['post'] ?? [];
+            }
+        }
+        return $this->postData[$key] ?? $default;
+    }
+
+    public function getCookie($key, $default = null)
+    {
+        if (!isset($this->cookieData)) {
+            $this->cookieData = $this->request->data['cookie'] ?? [];
+        }
+        return $this->cookieData[$key] ?? $default;
     }
     
+    public function header($key, $value)
+    {
+        $this->response->header($key, $value);
+    }
+
     public function cookie(
         $key,
         $value = '',
@@ -73,38 +118,30 @@ class Controller
     ) {
         $this->response->cookie($key, $value, $expire, $path, $domain, $secure, $httponly);
     }
-    
-    // 给客户端发送数据
-    public function sendRaw($result)
+
+    /**
+     * @param $user
+     * @throws
+     */
+    public function setSession($user)
     {
-        $this->response->send($result);
+        $session = md5(time() . "_" . mt_rand() . "_" . $user['userId']) . '_' . uniqid();
+        Redis::instance()->set(sprintf(UserModel::USER_SSO_SESSION, $session), json_encode($user));
+        $this->cookie("session", $session, time() + (730 * 24 * 3600), '/', '.snowfifi.com');
+        $this->user->userId = $user['userId'];  // 前端未登录，应返回未登录态让前端发起登录，服务端登录成功后，更新userId供后续流程使用。
     }
-    
-    public function header($key, $value)
-    {
-        $this->response->header($key, $value);
-    }
-    
+
     public function status($http_status_code)
     {
         $this->response->status($http_status_code);
     }
-    
-    public function getCookie($key, $default = null)
+
+    public function send($data)
     {
-        return $this->cookies[$key] ?? $default;
+        $this->header('Content-Type', 'application/json');
+        $this->response->send(json_encode($data));
     }
-    
-    public function getGet($key, $default = null)
-    {
-        return $this->getData[$key] ?? $default;
-    }
-    
-    public function getPost($key, $default = null)
-    {
-        return $this->postData[$key] ?? $default;
-    }
-    
+
     public function sendSuccess($data = null)
     {
         list($data['code'], $data['message']) = Code::SUCCESS;
@@ -118,58 +155,15 @@ class Controller
         $this->send($data);
     }
     
-    public function send($data)
-    {
-        $this->header('Content-Type', 'application/json');
-        $this->response->send(json_encode($data));
-    }
-    
-    /**
-     * @param $user
-     * @throws \Exception
-     */
-    public function setSession($user)
-    {
-        $session = md5(time() . "_" . mt_rand() . "_" . $user['userId']) . '_' . uniqid();
-        Redis::instance()->set(sprintf(UserModel::USER_SSO_SESSION, $session), json_encode($user));
-        $this->response->cookie("session", $session, time() + (730 * 24 * 3600), '/', '.snowfifi.com');
-        return UserModel::genUser($this->user, $user);
-    }
-
-    public function getUser()
-    {
-        return $this->user;
-    }
-
-    /**
-     * @throws HabitException
-     */
-    public function checkLogin()
-    {
-        if ($this->user->userId <= 0) {
-            throw new HabitException(Code::LOGIN_ERROR);
-        }
-    }
-    
-    public function isLogin()
-    {
-        if ($this->user->userId > 0) {
-            return true;
-        }
-        return false;
-    }
-    
     /**
      * @param $actionName
-     * @throws \Exception
-     * @throws \ReflectionException
+     * @throws
      */
     public function run($actionName)
     {
-        UserModel::verify($this->cookies, $this->user);
         try {
             $result = $this->$actionName();
-            $data['user'] = $this->user->getBasicUserInfo();
+            $data['user'] = $this->user->getBasicInfo();
             $data['data'] = $result ?? null;
             $this->sendSuccess($data);
         } catch (\Exception $e) {

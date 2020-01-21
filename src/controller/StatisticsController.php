@@ -8,12 +8,10 @@
 namespace HttpServer\controller;
 
 use HttpServer\component\HabitException;
-use HttpServer\component\Redis;
 use HttpServer\component\Controller;
-use HttpServer\conf\Code;
-use HttpServer\model\TargetModel;
 use HttpServer\service\TargetService;
 use HttpServer\service\TimeGridService;
+use HttpServer\component\Auth;
 
 class StatisticsController extends Controller
 {
@@ -24,7 +22,7 @@ class StatisticsController extends Controller
      */
     public function actionStatistics()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $data['target'] = TargetService::statistics();
         $data['timeGrid'] = TimeGridService::statistics();
         return $data;

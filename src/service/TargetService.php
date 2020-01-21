@@ -1,12 +1,22 @@
 <?php
 namespace HttpServer\service;
 
+use HttpServer\component\Controller;
 use HttpServer\component\Redis;
 use HttpServer\conf\Code;
 
 class TargetService
 {
+    const HASH_TARGET_INFO = 'HASH_TARGET_INFO_%s'; // {target_id}
+
+    private static function genTargetId()
+    {
+        Controller::getUser();
+    }
+
     public static function set($target, $time, $timeSuffix, $number) {
+        $targetId = self::genTargetId();
+        Redis::instance()->hGetAll(sprintf(self::HASH_TARGET_INFO, $targetId));
         return $targetId = 1;
     }
 

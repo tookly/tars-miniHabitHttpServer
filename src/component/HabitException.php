@@ -11,7 +11,7 @@ namespace HttpServer\component;
 class HabitException extends \Exception
 {
     
-    public function __construct($info, $newMessage = '')
+    public function __construct($info = 10000, $newMessage = '')
     {
         if (is_array($info)) {
             list($code, $message) = $info;

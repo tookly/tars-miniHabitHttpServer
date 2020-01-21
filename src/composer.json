@@ -2,6 +2,10 @@
   "name" : "miniHabit",
   "description": "tars http server for miniHabit",
   "require": {
+    "php": "^7.0",
+    "ext-json": "*",
+    "ext-redis": "*",
+    "ext-curl": "*",
     "phptars/tars-server": "~0.2.0",
     "phptars/tars-deploy": "~0.1.0",
     "phptars/tars2php": "~0.1.0",

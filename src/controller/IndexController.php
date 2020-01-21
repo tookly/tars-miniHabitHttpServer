@@ -11,6 +11,7 @@ use HttpServer\component\HabitException;
 use HttpServer\component\Controller;
 use HttpServer\service\DiaryService;
 use HttpServer\service\TargetService;
+use HttpServer\component\Auth;
 
 class IndexController extends Controller
 {
@@ -19,7 +20,7 @@ class IndexController extends Controller
      */
     public function actionIndex()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $pageIndex = $this->getGet('pageIndex', 1);
         $pageSize = $this->getGet('pageSize', 50);
         $data['target'] = TargetService::getString();
@@ -32,7 +33,7 @@ class IndexController extends Controller
      */
     public function actionSign()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         return TargetService::sign();
     }
     
@@ -41,7 +42,7 @@ class IndexController extends Controller
      */
     public function actionWriteDiary()
     {
-        $this->checkLogin();
+        Auth::checkLogin();
         $content = $this->getPost('content', '');
         return DiaryService::write($content);
     }
