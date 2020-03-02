@@ -18,11 +18,10 @@ class SetController extends Controller
         Auth::checkLogin();
         $target = $this->getPost('target', '');
         $time = $this->getPost('time', 0);
-        $timeSuffix = $this->getPost('timeSuffix', '');
         $number = $this->getPost('number', 0);
         if (empty($target) || empty($time) || empty($number)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TargetService::set($target, $time, $timeSuffix, $number);
+        return TargetService::set($target, $time, $number);
     }
 }

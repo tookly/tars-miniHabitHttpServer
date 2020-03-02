@@ -20,17 +20,15 @@ class TargetService
     /**
      * @param $target
      * @param $time
-     * @param $timeSuffix
      * @param $number
      * @return string
      * @throws \HttpServer\component\HabitException
      */
-    public static function set($target, $time, $timeSuffix, $number) {
+    public static function set($target, $time, $number) {
         $targetId = self::genTargetId();
         $data = [
             'target' => $target,
             'time' => $time,
-            'timeSuffix' => $timeSuffix,
             'number' => $number,
         ];
         Redis::instance()->hMSet(sprintf(self::HASH_TARGET_INFO, $targetId), $data);
@@ -41,9 +39,10 @@ class TargetService
         return Redis::instance()->hGetAll(sprintf(self::HASH_TARGET_INFO, $targetId));
     }
 
-    public static function getString($targetId = 0) {
-        $targetInfo = self::get($targetId);
-        sprintf("每天%s%s，%s%s",);
+    public static function getString() {
+        $targetId = 1;
+        list($time, $target, $number) = self::get($targetId);
+        return sprintf("我决定每天%s，%s%s\^0^/", $time, $target, $number);
     }
 
     public static function sign() {

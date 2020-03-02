@@ -13,11 +13,13 @@ class DiaryService
         return Code::SUCCESS;
     }
 
-    public static function getTemplates($templateId = 1) {
+    public static function getTemplates() {
         return [];
     }
 
+    // 默认模板，每日四问（使用html模板渲染？）
     public static function getTemplate($templateId = 1) {
-        return [];
+        return '';
     }
+
 }

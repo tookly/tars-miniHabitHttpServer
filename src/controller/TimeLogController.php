@@ -35,14 +35,14 @@ class TimeLogController extends Controller
         }
         return TimeGridService::fillDayGrids($grids, $taskId);
     }
-    
+
     /**
-     * @throws HabitException
+     *
      */
-    public function actionGetTasks()
+    public function actionStartTasks()
     {
         Auth::checkLogin();
-        return TaskService::getLists();
+        return TaskService::start();
     }
 
     /**
@@ -56,6 +56,15 @@ class TimeLogController extends Controller
             throw new HabitException(Code::ERROR_PARAMS);
         }
         return TaskService::finish($taskId);
+    }
+    
+    /**
+     * @throws HabitException
+     */
+    public function actionGetTasks()
+    {
+        Auth::checkLogin();
+        return TaskService::getLists();
     }
 
     /**

@@ -30,7 +30,7 @@ class IndexController extends Controller
     {
         Auth::checkLogin();
         return TargetService::sign();
-    }
+    }xx
     
     /**
      * @throws HabitException
