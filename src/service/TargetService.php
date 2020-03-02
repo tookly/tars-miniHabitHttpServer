@@ -1,31 +1,49 @@
 <?php
 namespace HttpServer\service;
 
-use HttpServer\component\Controller;
 use HttpServer\component\Redis;
-use HttpServer\conf\Code;
+use HttpServer\component\Auth;
 
 class TargetService
 {
     const HASH_TARGET_INFO = 'HASH_TARGET_INFO_%s'; // {target_id}
 
+    /**
+     * @return string
+     * @throws \HttpServer\component\HabitException
+     */
     private static function genTargetId()
     {
-        Controller::getUser();
+        return Auth::getUser()->userId . '_1';
     }
 
+    /**
+     * @param $target
+     * @param $time
+     * @param $timeSuffix
+     * @param $number
+     * @return string
+     * @throws \HttpServer\component\HabitException
+     */
     public static function set($target, $time, $timeSuffix, $number) {
         $targetId = self::genTargetId();
-        Redis::instance()->hGetAll(sprintf(self::HASH_TARGET_INFO, $targetId));
-        return $targetId = 1;
+        $data = [
+            'target' => $target,
+            'time' => $time,
+            'timeSuffix' => $timeSuffix,
+            'number' => $number,
+        ];
+        Redis::instance()->hMSet(sprintf(self::HASH_TARGET_INFO, $targetId), $data);
+        return $targetId;
     }
 
     public static function get($targetId = 0) {
-        return [];
+        return Redis::instance()->hGetAll(sprintf(self::HASH_TARGET_INFO, $targetId));
     }
 
     public static function getString($targetId = 0) {
-        return "";
+        $targetInfo = self::get($targetId);
+        sprintf("每天%s%s，%s%s",);
     }
 
     public static function sign() {

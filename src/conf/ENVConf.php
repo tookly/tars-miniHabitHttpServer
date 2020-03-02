@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: liangchen
- * Date: 2018/5/17
- * Time: 下午4:15.
- */
 
 namespace HttpServer\conf;
 

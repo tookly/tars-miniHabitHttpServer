@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: chengxiaoli
- * Date: 2019/5/17
- * Time: 下午8:01
- */
+
 // 以namespace的方式,在psr4的框架下对代码进行加载
 return array(
     'namespaceName' => 'HttpServer\\',

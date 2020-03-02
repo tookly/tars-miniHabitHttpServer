@@ -1,14 +1,11 @@
 <?php
-/**
- * User: chengxiaoli
- * Date: 2019/12/31
- * Time: 下午14:30.
- */
 
 namespace HttpServer\controller;
 
 use HttpServer\component\Controller;
 use HttpServer\component\Auth;
+use HttpServer\component\HabitException;
+use HttpServer\conf\Code;
 
 class AuthController extends Controller
 {
@@ -19,6 +16,9 @@ class AuthController extends Controller
     public function actionLogin()
     {
         $code = $this->getPost('code', '');
+        if (empty($code)) {
+            throw new HabitException(Code::ERROR_PARAMS);
+        }
         Auth::login($code);
     }
     

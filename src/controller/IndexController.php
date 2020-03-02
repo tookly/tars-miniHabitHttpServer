@@ -1,9 +1,4 @@
 <?php
-/**
- * User: chengxiaoli
- * Date: 2019/12/31
- * Time: 下午14:30.
- */
 
 namespace HttpServer\controller;
 

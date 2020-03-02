@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: chengxiaoli
- * Date: 2019/5/17
- * Time: 下午8:01
- */
+
 require_once(__DIR__."/vendor/autoload.php");
 
 use \Tars\cmd\Command;

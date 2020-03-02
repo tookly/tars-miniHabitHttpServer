@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: chengxiaoli
- * Date: 2019/7/17
- * Time: 下午4:35
- */
 
 namespace HttpServer\component;
 
