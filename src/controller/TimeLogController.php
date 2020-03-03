@@ -42,7 +42,11 @@ class TimeLogController extends Controller
     public function actionStartTasks()
     {
         Auth::checkLogin();
-        return TaskService::start();
+        $taskId = $this->getPost('taskId', 0);
+        if (empty($taskId)) {
+            throw new HabitException(Code::ERROR_PARAMS);
+        }
+        return TaskService::start($taskId);
     }
 
     /**
@@ -58,27 +62,4 @@ class TimeLogController extends Controller
         return TaskService::finish($taskId);
     }
     
-    /**
-     * @throws HabitException
-     */
-    public function actionGetTasks()
-    {
-        Auth::checkLogin();
-        return TaskService::getLists();
-    }
-
-    /**
-     * @throws HabitException
-     */
-    public function actionAddTask()
-    {
-        Auth::checkLogin();
-        $task = $this->getPost('task', '');
-        $type = $this->getPost('type', 0);
-        if (empty($task) || empty($type)) {
-            throw new HabitException(Code::ERROR_PARAMS);
-        }
-        return TaskService::add($task, $type);
-    }
-
 }
