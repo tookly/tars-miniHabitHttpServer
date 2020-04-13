@@ -5,6 +5,7 @@ namespace HttpServer\controller;
 use HttpServer\component\HabitException;
 use HttpServer\component\Controller;
 use HttpServer\conf\Code;
+use HttpServer\model\TimeGridModel;
 use HttpServer\service\TaskService;
 use HttpServer\service\TimeGridService;
 use HttpServer\component\Auth;
@@ -18,7 +19,7 @@ class TimeLogController extends Controller
     {
         Auth::checkLogin();
         $data['date'] = date('Y.m.d 第W周', time());
-        $data['dayGrid'] = TimeGridService::getDayGrids();
+        $data['dayGrids'] = TimeGridService::getDayGrids();
         return $data;
     }
     
@@ -33,13 +34,13 @@ class TimeLogController extends Controller
         if (empty($grids) || empty($taskId)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TimeGridService::fillDayGrids($grids, $taskId);
+        return TimeGridService::fillDayGrids($grids, taskId);
     }
 
     /**
      *
      */
-    public function actionStartTasks()
+    public function actionStartTask()
     {
         Auth::checkLogin();
         $taskId = $this->getPost('taskId', 0);

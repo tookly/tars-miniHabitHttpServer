@@ -16,7 +16,8 @@ class Code
     const ERROR_PARAMS = [2, 'error params'];
     const LOGIN_FAILED = [3, 'login failed'];
     const LOGIN_ERROR = [4, 'not login'];
-    
+    const ILLEGAL_OPERATION = [5, 'Illegal operation'];
+
     // 1000 - 业务提示码
     
 }

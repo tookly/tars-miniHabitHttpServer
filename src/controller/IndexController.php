@@ -18,7 +18,7 @@ class IndexController extends Controller
         Auth::checkLogin();
         $pageIndex = $this->getGet('pageIndex', 1);
         $pageSize = $this->getGet('pageSize', 50);
-        $data['target'] = TargetService::getString();
+        $data['target'] = TargetService::getUserTargetString();
         $data['dailyList'] = DiaryService::getList($pageIndex, $pageSize);
         return $data;
     }
@@ -33,7 +33,7 @@ class IndexController extends Controller
     }
     
     /**
-     * @throws HabitException
+     * @throws
      */
     public function actionWriteDiary()
     {

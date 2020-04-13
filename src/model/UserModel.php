@@ -68,6 +68,7 @@ class UserModel extends Model
         }
         $info = WechatModel::getOpenIdByCode($code);
         try {
+            // 因为同一个微信账号的openId是一样的，而openId在数据是唯一索引，这里不会有并发问题。
             $user = self::instance()->get("user", "*", ["openId" => $info['openid']]);
             if (empty($user)) {
                 $userInfo['openId'] = $info['openid'];
@@ -79,6 +80,8 @@ class UserModel extends Model
 //                $user['province'] = $info['province'];
 //                $user['city'] = $info['city'];
 //                $user['language'] = $info['language'];
+                $userInfo['createdAt'] = date('Y-m-d H:i:s');
+                $userInfo['updatedAt'] = date('Y-m-d H:i:s');
                 self::instance()->insert("user", $userInfo);
                 $user['userId'] = self::instance()->id();
             }

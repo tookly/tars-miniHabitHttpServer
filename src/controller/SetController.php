@@ -16,12 +16,12 @@ class SetController extends Controller
     public function actionSet()
     {
         Auth::checkLogin();
-        $target = $this->getPost('target', '');
+        $action = $this->getPost('action', '');
         $time = $this->getPost('time', 0);
         $number = $this->getPost('number', 0);
-        if (empty($target) || empty($time) || empty($number)) {
+        if (empty($action) || empty($time) || empty($number)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TargetService::set($target, $time, $number);
+        return TargetService::create($action, $time, $number);
     }
 }

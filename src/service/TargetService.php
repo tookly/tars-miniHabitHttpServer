@@ -3,50 +3,73 @@ namespace HttpServer\service;
 
 use HttpServer\component\Redis;
 use HttpServer\component\Auth;
+use HttpServer\model\SignLogModel;
+use HttpServer\model\TargetModel;
+use HttpServer\component\HabitException;
+use HttpServer\conf\Code;
 
 class TargetService
 {
-    const HASH_TARGET_INFO = 'HASH_TARGET_INFO_%s'; // {target_id}
+    const HASH_TARGET_SIGN_TIMES = 'HASH_TARGET_SIGN_TIME_%s_%s'; // {target_id} {ym}
 
     /**
-     * @return string
-     * @throws \HttpServer\component\HabitException
-     */
-    private static function genTargetId()
-    {
-        return Auth::getUser()->userId . '_1';
-    }
-
-    /**
-     * @param $target
+     * @param $action
      * @param $time
      * @param $number
      * @return string
-     * @throws \HttpServer\component\HabitException
+     * @throws
      */
-    public static function set($target, $time, $number) {
-        $targetId = self::genTargetId();
-        $data = [
-            'target' => $target,
+    public static function create($action, $time, $number) {
+        $target = [
+            'userId' => Auth::getUser()->userId,
+            'action' => $action,
             'time' => $time,
             'number' => $number,
+            'unit' => 1,
+            'status' => TargetModel::STATUS_ACTIVE,
+            'createdAt' => date('Y-m-d H:i:s'),
+            'updatedAt' => date('Y-m-d H:i:s'),
         ];
-        Redis::instance()->hMSet(sprintf(self::HASH_TARGET_INFO, $targetId), $data);
-        return $targetId;
+        return TargetModel::createTarget($target);
     }
 
-    public static function get($targetId = 0) {
-        return Redis::instance()->hGetAll(sprintf(self::HASH_TARGET_INFO, $targetId));
+    /**
+     * @return array|null
+     * @throws HabitException
+     */
+    public static function getUserTarget() {
+        return TargetModel::getUserTarget();
     }
 
-    public static function getString() {
-        $targetId = 1;
-        list($time, $target, $number) = self::get($targetId);
-        return sprintf("我决定每天%s，%s%s\^0^/", $time, $target, $number);
+    /**
+     * @return string
+     * @throws HabitException
+     */
+    public static function getUserTargetString() {
+        $target = self::getUserTarget();
+        if ($target) {
+            return sprintf("我决定每天%s，%s%s\^0^/", $target['time'], $target['action'], $target['number']);
+        }
+        return '';
     }
 
+    /**
+     * @return mixed
+     * @throws
+     */
     public static function sign() {
-        return $number = 1;
+        $target = TargetModel::getUserTarget();
+        if (!$target || !$target['id']) {
+            throw new HabitException(Code::ILLEGAL_OPERATION);
+        }
+        $record = [
+            "targetId" => $target['id'],
+            "unit" => $target['unit'],
+            "createdAt" => date('Y-m-d H:i:s'),
+            "updatedAt" => date('Y-m-d H:i:s'),
+        ];
+        SignLogModel::addRecord($record);
+        return $record['unit'];
     }
 
     public static function statistics() {

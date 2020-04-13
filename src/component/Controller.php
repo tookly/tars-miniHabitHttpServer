@@ -21,6 +21,12 @@ class Controller
 
     protected $user;
 
+    /**
+     * Controller constructor.
+     * @param Request $request
+     * @param Response $response
+     * @throws \ReflectionException
+     */
     public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
@@ -56,15 +62,15 @@ class Controller
     {
         $user = new UserModel();
         if (isset($this->request->data['header']) && isset($this->request->data['header']['x-real-ip'])) {
-            $this->user->clientIP = $this->request->data['header']['x-real-ip'];
+            $user->clientIP = $this->request->data['header']['x-real-ip'];
         }
         if (isset($this->request->data['header']) && isset($this->request->data['header']['user-agent'])) {
-            $this->user->userAgent = $this->request->data['header']['user-agent'];
+            $user->userAgent = $this->request->data['header']['user-agent'];
         }
         if (isset($this->request->data['header']) && isset($this->request->data['header']['referer'])) {
-            $this->user->referer = $this->request->data['header']['referer'];
+            $user->referer = $this->request->data['header']['referer'];
         }
-        Auth::verify($this->getCookie('session'), $this->getUser());
+        Auth::verify($this->getCookie('session'), $user);
         return $user;
     }
 
