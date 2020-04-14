@@ -2,6 +2,7 @@
 
 namespace HttpServer\component;
 
+use HttpServer\conf\ENVConf;
 use HttpServer\model\UserModel;
 use Tars\core\Request;
 use Tars\core\Response;
@@ -60,6 +61,15 @@ class Controller
      */
     public function initUser()
     {
+        if (ENVConf::DEBUG) {
+            $user = new UserModel();
+            $info = [
+                'userId' => 9999,
+                'nickName' => '无所不能的小药君'
+            ];
+            UserModel::genUser($user, $info);
+            return $user;
+        }
         $user = new UserModel();
         if (isset($this->request->data['header']) && isset($this->request->data['header']['x-real-ip'])) {
             $user->clientIP = $this->request->data['header']['x-real-ip'];

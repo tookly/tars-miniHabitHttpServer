@@ -6,6 +6,8 @@ use Tars\App;
 
 class ENVConf
 {
+    const DEBUG = 1;
+
     /**
      * @return mixed
      * 获取当前环境的主控配置
