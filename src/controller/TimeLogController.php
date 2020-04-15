@@ -12,21 +12,43 @@ use HttpServer\component\Auth;
 
 class TimeLogController extends Controller
 {
+
+    // 这里格子的填充方式有点迷，缓一缓再写。
+
     /**
+     * @return mixed
      * @throws HabitException
      */
-    public function actionGetDayGrid()
+    public function actionIndex()
     {
         Auth::checkLogin();
         $data['date'] = date('Y.m.d 第W周', time());
-        $data['dayGrids'] = TimeGridService::getDayGrids();
+        $data['dayGrids'] = TimeGridService::getTodayGrids();
         return $data;
     }
-    
+
+    /**
+     * 填充时间段
+     *
+     * @return array
+     * @throws HabitException
+     */
+    public function actionFillDuration()
+    {
+        Auth::checkLogin();
+        $startTime = $this->getPost('startTime', '');
+        $endTime = $this->getPost('endTime', '');
+        $taskId = $this->getPost('taskId', 0);
+        if (empty($startTime) || empty($endTime) || empty($taskId)) {
+            throw new HabitException(Code::ERROR_PARAMS);
+        }
+        return TimeGridService::fillDuration($startTime, $endTime, $taskId);
+    }
+
     /**
      * @throws HabitException
      */
-    public function actionFillGrids()
+    public function actionFillWithGrids()
     {
         Auth::checkLogin();
         $grids = $this->getPost('grids', '');
@@ -34,11 +56,12 @@ class TimeLogController extends Controller
         if (empty($grids) || empty($taskId)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TimeGridService::fillDayGrids($grids, taskId);
+        return TimeGridService::fillWithGrids($grids, $taskId);
     }
 
     /**
-     *
+     * @return array
+     * @throws HabitException
      */
     public function actionStartTask()
     {

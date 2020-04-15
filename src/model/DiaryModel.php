@@ -15,6 +15,14 @@ class DiaryModel extends Model
     const STATUS_ACTIVE = 1;
     const STATUS_DELETE = 2;
 
+    /**
+     * 从缓存中读取用户日记 （暂时都直接从db读取）
+     *
+     * @param $page
+     * @param int $pageSize
+     * @return mixed
+     * @throws \HttpServer\component\HabitException
+     */
     public static function getUserDiaryList($page, $pageSize = 50)
     {
         // 这里仅从redis读取日志列表，缓存就是一个大的str，用list维护很麻烦
@@ -41,8 +49,12 @@ class DiaryModel extends Model
         return self::instance()->select(
             "diary",
             "*",
-            ["userId" => $userId, "status" => 1],
-            ["ORDER" => ['createdAt' => 'DESC'], "LIMIT" => [$page - 1, ($page - 1) * $pageSize]]
+            [
+                "userId" => $userId,
+                "status" => 1,
+                "ORDER" => ['createdAt' => 'DESC'],
+                "LIMIT" => [intval(($page - 1) * $pageSize), $pageSize],
+            ]
         );
     }
 
@@ -62,12 +74,13 @@ class DiaryModel extends Model
     /**
      * 删除随笔、更新随笔内容等
      *
+     * @param $id
      * @param $diary
-     * @throws \Exception
+     * @throws
      */
-    public static function updateDiary($diary)
+    public static function updateDiary($id, $diary)
     {
-        self::instance()->update("diary", $diary['id'], $diary);
+        self::instance()->update("diary", $diary, ["id" => $id]);
     }
 
 }

@@ -34,6 +34,30 @@ class DiaryService
         return $diary;
     }
 
+    /**
+     * @param $id
+     * @param $content
+     */
+    public static function edit($id, $content) {
+        $diary = [
+            "content" => $content,
+            "updatedAt" => date('Y-m-d H:i:s'),
+        ];
+        DiaryModel::updateDiary($id, $diary);
+    }
+
+    /**
+     * @param $id
+     * @throws
+     */
+    public static function remove($id) {
+        $diary = [
+            "status" => DiaryModel::STATUS_DELETE,
+            "updatedAt" => date('Y-m-d H:i:s'),
+        ];
+        DiaryModel::updateDiary($id, $diary);
+    }
+
     public static function getTemplates() {
         return [];
     }
