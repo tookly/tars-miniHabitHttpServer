@@ -19,9 +19,10 @@ class SetController extends Controller
         $action = $this->getPost('action', '');
         $time = $this->getPost('time', 0);
         $number = $this->getPost('number', 0);
-        if (empty($action) || empty($time) || empty($number)) {
+        $unit = $this->getPost('unit', 0);
+        if (empty($action) || empty($time) || empty($number) || empty($unit)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TargetService::create($action, $time, $number);
+        return TargetService::create($action, $time, $number, $unit);
     }
 }

@@ -16,16 +16,17 @@ class TargetService
      * @param $action
      * @param $time
      * @param $number
+     * @param $unit
      * @return string
      * @throws
      */
-    public static function create($action, $time, $number) {
+    public static function create($action, $time, $number, $unit) {
         $target = [
             'userId' => Auth::getUser()->userId,
             'action' => $action,
             'time' => $time,
             'number' => $number,
-            'unit' => 1,
+            'unit' => $unit,
             'status' => TargetModel::STATUS_ACTIVE,
             'createdAt' => date('Y-m-d H:i:s'),
             'updatedAt' => date('Y-m-d H:i:s'),
@@ -37,20 +38,29 @@ class TargetService
      * @return array|null
      * @throws HabitException
      */
-    public static function getUserTarget() {
-        return TargetModel::getUserTarget();
-    }
+//    public static function getUserTarget() {
+//        return TargetModel::getUserTarget();
+//    }
 
     /**
      * @return string
      * @throws HabitException
      */
     public static function getUserTargetString() {
-        $target = self::getUserTarget();
+        $target = TargetModel::getUserTarget();
         if ($target) {
-            return sprintf("我决定每天%s，%s%s\^0^/", $target['time'], $target['action'], $target['number']);
+            return sprintf("我决定每天%s，%s%s%s\^0^/", $target['time'], $target['action'], $target['number'], $target['unit']);
         }
         return '';
+    }
+
+    /**
+     * @return int
+     * @throws
+     */
+    public static function getUserTargetTimes() {
+        $target = TargetModel::getUserTarget();
+        return $target ? SignLogModel::getRecordTimes($target['id']) : 0;
     }
 
     /**
@@ -59,17 +69,17 @@ class TargetService
      */
     public static function sign() {
         $target = TargetModel::getUserTarget();
-        if (!$target || !$target['id']) {
+        if (!$target) {
             throw new HabitException(Code::ILLEGAL_OPERATION);
         }
         $record = [
             "targetId" => $target['id'],
-            "unit" => $target['unit'],
+            "times" => 1,
             "createdAt" => date('Y-m-d H:i:s'),
             "updatedAt" => date('Y-m-d H:i:s'),
         ];
         SignLogModel::addRecord($record);
-        return $record['unit'];
+        return $record['times'];
     }
 
     public static function statistics() {

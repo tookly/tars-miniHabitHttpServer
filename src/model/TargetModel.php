@@ -9,7 +9,6 @@ use HttpServer\component\HabitException;
 
 class TargetModel extends Model
 {
-    const HASH_TARGET_INFO = 'HASH:TARGET:INFO:%s'; // {target_id}
     const TARGET_KEY = 'HASH:TARGET:%s';
     const TARGET_NOTE_KEY = 'ZSET:TARGET:NOTE:%s';
     const TARGET_SIGN_KEY = 'ZSET:TARGET:SIGN:%s';
@@ -32,15 +31,15 @@ class TargetModel extends Model
         // 按第一版设计，希望每个用户只有一个target，但是后续可以扩展到有多个target，如果不在表上加唯一索引，那么这里会存在并发问题。
         // 那么这里要上事务，而且事务隔离级别为 可重复读。（可以解决吗？）
         $database = self::instance();
-        $database->action(function($database, $user, $target) {
-            $exist = $database->get("target", "*", ["userId" => $user->userId, "status" => self::STATUS_ACTIVE]);
+        $database->action(function ($database) use (&$target) {
+            $exist = $database->get("target", "*", ["userId" => $target['userId'], "status" => self::STATUS_ACTIVE]);
             if ($exist) {
                 return false;
             }
             $database->insert("target", $target);
-            $target['id'] = self::instance()->id();
-            Redis::instance()->hMset(sprintf(self::HASH_TARGET_INFO, $target['userId']), $target);
+            $target['id'] = $database->id();
         });
+        Redis::instance()->hMset(sprintf(self::TARGET_KEY, $target['userId']), $target);
         return $target;
     }
 
@@ -54,18 +53,19 @@ class TargetModel extends Model
     {
         $user = Auth::getUser();
         $key = sprintf(self::TARGET_KEY, (int)$user->userId);
-        $empty = [
-            'action' => '',
-            'number' => '',
-            'time' => '',
-        ];
-        $target = Redis::instance()->hGetAll($key) ?: null;
-        if (!$target) {
-            $target = self::getUserActiveTarget($user);
-            $target = $target ?: $empty;
-            Redis::instance()->hMSet($key, $target);
-        }
-        return $target;
+        return Redis::instance()->hGetAll($key) ?: null;
+//        $empty = [
+//            'action' => '',
+//            'number' => '',
+//            'time' => '',
+//        ];
+//        return Redis::instance()->hGetAll($key) ?: null;
+//        if (!$target) {
+//            $target = self::getUserActiveTarget($user);
+//            $target = $target ?: $empty;
+//            Redis::instance()->hMSet($key, $target);
+//        }
+//        return $target;
     }
 
     public static function getUserActiveTarget($user)

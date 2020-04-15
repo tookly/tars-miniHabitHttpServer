@@ -4,6 +4,7 @@ namespace HttpServer\controller;
 
 use HttpServer\component\HabitException;
 use HttpServer\component\Controller;
+use HttpServer\model\SignLogModel;
 use HttpServer\service\DiaryService;
 use HttpServer\service\TargetService;
 use HttpServer\component\Auth;
@@ -19,6 +20,7 @@ class IndexController extends Controller
         $pageIndex = $this->getGet('pageIndex', 1);
         $pageSize = $this->getGet('pageSize', 50);
         $data['target'] = TargetService::getUserTargetString();
+        $data['times'] = TargetService::getUserTargetTimes();
         $data['dailyList'] = DiaryService::getList($pageIndex, $pageSize);
         return $data;
     }
@@ -29,7 +31,8 @@ class IndexController extends Controller
     public function actionSign()
     {
         Auth::checkLogin();
-        return TargetService::sign();
+        $data['times'] = TargetService::sign();
+        return $data;
     }
     
     /**

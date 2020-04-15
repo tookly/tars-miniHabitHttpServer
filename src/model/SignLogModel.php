@@ -19,7 +19,17 @@ class SignLogModel extends Model
     public static function addRecord($record)
     {
         self::instance()->insert("signLog", $record);
-        Redis::instance()->incr(sprintf(self::HASH_TARGET_INFO, $record['targetId']), $record['unit']);
+        Redis::instance()->incr(sprintf(self::HASH_TARGET_INFO, $record['targetId']), $record['times']);
+    }
+
+    /**
+     * @param $targetId
+     * @return int
+     * @throws
+     */
+    public static function getRecordTimes($targetId)
+    {
+        return Redis::instance()->get(sprintf(self::HASH_TARGET_INFO, $targetId)) ?: 0;
     }
 
     /**
