@@ -28,7 +28,7 @@ class TimeLogController extends Controller
     }
 
     /**
-     * 填充时间段
+     * 填充时间段，暂时不支持
      *
      * @return array
      * @throws HabitException
@@ -53,10 +53,11 @@ class TimeLogController extends Controller
         Auth::checkLogin();
         $grids = $this->getPost('grids', '');
         $taskId = $this->getPost('taskId', 0);
+        $content = $this->getPost('content', '');
         if (empty($grids) || empty($taskId)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TimeGridService::fillWithGrids($grids, $taskId);
+        return TimeGridService::fillWithGrids($grids, $taskId, $content);
     }
 
     /**

@@ -1,7 +1,10 @@
 <?php
 namespace HttpServer\service;
 
+use HttpServer\component\Auth;
+use HttpServer\component\Redis;
 use HttpServer\conf\Code;
+use HttpServer\model\TimeGridModel;
 
 class TaskService
 {
@@ -28,25 +31,31 @@ class TaskService
 
     public static function start($taskId = 0) {
         // 记录开始时间点
+        $dayId = date('Ymd');
+        $userId = Auth::getUser()->userId;
         $grids = [
-//            [
-//                'startTime' => $startTime,
-//                'endTime' => $endTime,
-//            ]
+            [
+                'startTime' => TimeGridModel::time2Grid(date('H:i')),
+                'endTime' => TimeGridModel::time2Grid('23:59'),
+            ]
         ];
         TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH);
+        Redis::instance()->set(sprintf(self::TASK_STATUS, $userId), $taskId);
         return Code::SUCCESS;
     }
 
     public static function finish($taskId = 0) {
         // 记录结束时间点
+        $dayId = date('Ymd');
+        $userId = Auth::getUser()->userId;
         $grids = [
-//            [
-//                'startTime' => $startTime,
-//                'endTime' => $endTime,
-//            ]
+            [
+                'startTime' => TimeGridModel::time2Grid('00:00'),
+                'endTime' => TimeGridModel::time2Grid(date('H:i')),
+            ]
         ];
         TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH);
+        Redis::instance()->del(sprintf(self::TASK_STATUS, $userId), $taskId);
         return Code::SUCCESS;
     }
 
