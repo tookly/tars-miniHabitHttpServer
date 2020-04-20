@@ -26,17 +26,21 @@ class TimeGridService
     }
 
     public static function fillDuration($startTime, $endTime, $taskId) {
+        $dayId = date('Ymd');
+        $userId = Auth::getUser()->userId;
         $grids = [
             [
                 'startTime' => $startTime,
                 'endTime' => $endTime,
             ]
         ];
-        return self::fillTodayGrids($grids, $taskId, '', self::LEVEL_MANUAL);
+        return self::fillTodayGrids($grids, $taskId, '', self::LEVEL_MANUAL, $userId, $dayId);
     }
 
     public static function fillWithGrids($grids, $taskId, $content) {
-        return self::fillTodayGrids($grids, $taskId, $content, self::LEVEL_MANUAL);
+        $dayId = date('Ymd');
+        $userId = Auth::getUser()->userId;
+        return self::fillTodayGrids($grids, $taskId, $content, self::LEVEL_MANUAL, $userId, $dayId);
     }
 
     /**
@@ -44,13 +48,15 @@ class TimeGridService
      * @param $taskId
      * @param $content
      * @param $level
+     * @param $dayId
+     * @param $userId
      * @return array
      * @throws
      */
-    public static function fillTodayGrids($girds, $taskId, $content, $level = 1) {
+    public static function fillTodayGrids($girds, $taskId, $content, $level = 1, $dayId = '', $userId = '') {
         // 需要返回最新的grids来刷新页面吗？
-        $dayId = date('Ymd');
-        $userId = Auth::getUser()->userId;
+//        $dayId = date('Ymd');
+//        $userId = Auth::getUser()->userId;
         $content = $content ?: self::TASK_CONFIG[$taskId];
         foreach ($girds as $grid) {
             $grid['dayId'] = $dayId;

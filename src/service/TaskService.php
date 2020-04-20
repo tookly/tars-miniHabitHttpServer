@@ -2,6 +2,7 @@
 namespace HttpServer\service;
 
 use HttpServer\component\Auth;
+use HttpServer\component\HabitException;
 use HttpServer\component\Redis;
 use HttpServer\conf\Code;
 use HttpServer\model\TimeGridModel;
@@ -35,26 +36,42 @@ class TaskService
         $userId = Auth::getUser()->userId;
         $grids = [
             [
+                'taskId' => $taskId,
+                'dayId' => $dayId,
                 'startTime' => TimeGridModel::time2Grid(date('H:i')),
                 'endTime' => TimeGridModel::time2Grid('23:59'),
             ]
         ];
-        TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH);
-        Redis::instance()->set(sprintf(self::TASK_STATUS, $userId), $taskId);
+        if (!Redis::instance()->set(sprintf(self::TASK_STATUS, $userId), json_encode($grids), ['nx' => 1])) {
+            throw new HabitException(Code::FAIL, '当前有任务正在执行中');
+        }
+        TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH, $dayId, $userId);
         return Code::SUCCESS;
     }
 
+    /**
+     * @param int $taskId
+     * @return array
+     * @throws HabitException
+     */
     public static function finish($taskId = 0) {
         // 记录结束时间点
         $dayId = date('Ymd');
         $userId = Auth::getUser()->userId;
+        if (!$grid = Redis::instance()->get(sprintf(self::TASK_STATUS, $userId), $taskId)) {
+            throw new HabitException(Code::FAIL, '没有需要停止的任务');
+        }
+        $gridInfo = json_decode($grid, true);
+        if ($gridInfo['taskId'] !== $taskId || $gridInfo['dayId'] > $dayId || ($gridInfo['dayId'] == $dayId && $gridInfo['startTime'] > date('H:i'))) {
+            throw new HabitException(Code::ERROR_PARAMS);
+        }
         $grids = [
             [
-                'startTime' => TimeGridModel::time2Grid('00:00'),
+                'startTime' => $gridInfo['dayId'] == $dayId ? $gridInfo['startTime'] : TimeGridModel::time2Grid('00:00'),
                 'endTime' => TimeGridModel::time2Grid(date('H:i')),
             ]
         ];
-        TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH);
+        TimeGridService::fillTodayGrids($grids, $taskId, TimeGridService::LEVEL_START_FINISH, $dayId, $userId);
         Redis::instance()->del(sprintf(self::TASK_STATUS, $userId), $taskId);
         return Code::SUCCESS;
     }
