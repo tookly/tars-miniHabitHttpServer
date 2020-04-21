@@ -13,8 +13,6 @@ use HttpServer\component\Auth;
 class TimeLogController extends Controller
 {
 
-    // 这里格子的填充方式有点迷，缓一缓再写。
-
     /**
      * @return mixed
      * @throws HabitException
@@ -23,6 +21,7 @@ class TimeLogController extends Controller
     {
         Auth::checkLogin();
         $data['date'] = date('Y.m.d 第W周', time());
+        $data['initGrids'] = TimeGridService::getInitDayGrids();
         $data['dayGrids'] = TimeGridService::getTodayGrids();
         return $data;
     }

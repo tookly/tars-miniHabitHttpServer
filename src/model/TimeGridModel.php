@@ -8,41 +8,19 @@ use HttpServer\component\Auth;
 
 class TimeGridModel extends Model
 {
-    const GAP = 15 * 60; // 15分钟间隔
 
     const STR_DIARY = "STR:TIME_GRIDS:%s:%s"; // {user_id} {day_id}
 
     /**
-     * 将时间转换为格子显示时间，比如 3000 即 00:50
-     * @param $time
-     */
-    public static function time2Grid($time)
-    {
-        return $time;
-    }
-
-    /**
-     * 将格子显示时间转换为时间偏移  比如 00:50 转为 3000
-     * @param $grid
-     */
-    public static function grid2Time($grid)
-    {
-        return $grid;
-    }
-
-    /**
-     * 将一天按GAP划分为格子
+     * 将一天按分钟划分
      *
      * @return array
      */
-    public static function initDayGrids()
+    public static function initDayMinuteGrids()
     {
         $grids = [];
-        for($i = 0; $i < 86400; $i = $i + self::GAP) {
-            $grid['startTime'] = self::time2Grid($i);
-            $grid['endTime'] = self::time2Grid($i + self::GAP - 1);
-            $grid['content'] = '';
-            $grids[] = $grid;
+        for($i = 0; $i < 86400; $i = $i + 60) {
+            $grids[] = '';
         }
         return $grids;
     }
@@ -50,27 +28,49 @@ class TimeGridModel extends Model
     /**
      * @param $userId
      * @param $dayId
+     * @return array
      * @throws
      */
     public static function genDayGrid($userId, $dayId)
     {
         // 如果有读写分离，会无法及时读取到写入的数据
+        $dayMinuteGrids = self::initDayMinuteGrids();
         $grids = self::getGridByUserIdAndDayId($userId, $dayId);
-        $dayGrids = self::initDayGrids();
         foreach ($grids as $grid) {
-            $startIndex = floor($grid['startTime'] / self::GAP);
-            $endIndex = floor($grid['endTime'] / self::GAP);
-            for ($i = $startIndex; $i <= $endIndex; $i++) {
-                $dayGrids[$i]['content'] = $grid['content'];
+            $start = intval($grid['startTime'] / 60);
+            $end = intval($grid['endTime'] / 60);
+            for ($i = $start; $i < $end; $i++) {
+                $dayMinuteGrids[$i] = $grid['content'];
             }
         }
+        $dayGrids = [];
+        $start = 0;
+        $current = 0;
+        $size = count($dayMinuteGrids);
+        while ($current < $size - 1) {
+            // 最后一个之前的元素，如果content一样，则归并为一个数组
+            if ($dayMinuteGrids[$current] == $dayMinuteGrids[$current+1]) {
+                $current++;
+                continue;
+            }
+            $dayGrid['length'] = $start . ':' . $current;
+            $dayGrid['content'] = $dayMinuteGrids[$current];
+            $dayGrids[] = $dayGrid;
+            $current++;
+            $start = $current;
+        }
+        // 将最后一个元素加入grid
+        $dayGrid['length'] = $start . ':' . $current;
+        $dayGrid['content'] = $dayMinuteGrids[$current];
+        $dayGrids[] = $dayGrid;
+        return $dayGrids;
     }
 
     public static function getTodayGrids($userId, $dayId)
     {
         $key = sprintf(self::STR_DIARY, $userId, $dayId);
         $data = Redis::instance()->get($key);
-        return $data ? json_decode($data, true) : self::initDayGrids();
+        return $data ? json_decode($data, true) : [];
     }
 
     /**
@@ -83,8 +83,8 @@ class TimeGridModel extends Model
     public static function fillTodayGrids($grids, $userId, $dayId)
     {
         self::fillGrids($grids);
-        $key = sprintf(self::STR_DIARY, $userId, $dayId);
         $dayGrids = self::genDayGrid($userId, $dayId);
+        $key = sprintf(self::STR_DIARY, $userId, $dayId);
         Redis::instance()->set($key, json_encode($dayGrids));
         return $dayGrids;
     }
@@ -99,13 +99,16 @@ class TimeGridModel extends Model
      */
     public static function getGridByUserIdAndDayId($userId, $dayId)
     {
-        return self::instance()->get(
+        return self::instance()->select(
             "timeGrid",
             "*",
             [
                 "userId" => $userId,
                 "dayId" => $dayId,
-                "ORDER" => ["level"],
+                "ORDER" => [
+                    "level" => 'ASC',
+                    "id" => "ASC",
+                ],
             ]
         );
     }
