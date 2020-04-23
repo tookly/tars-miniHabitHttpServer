@@ -138,4 +138,16 @@ class TimeGridModel extends Model
         self::instance()->insert("timeGrid", $grids);
     }
 
+    /**
+     * 根据uuid更新格子，单个
+     *
+     * @param $uuid
+     * @param $grid
+     * @throws \Exception
+     */
+    public static function updateGrid($uuid, $grid)
+    {
+        self::instance()->update("timeGrid", $grid, ['uuid' => $uuid]);
+    }
+
 }

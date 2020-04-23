@@ -1,6 +1,8 @@
 <?php
 namespace HttpServer\service;
 
+use HttpServer\component\HabitException;
+use HttpServer\component\Redis;
 use HttpServer\conf\Code;
 use HttpServer\model\TimeGridModel;
 use HttpServer\component\Auth;
@@ -98,25 +100,103 @@ class TimeGridService
      * @throws
      */
     public static function fillTodayGrids($grids, $taskId, $content, $level = 1, $userId = '', $dayId = '') {
-        // 需要返回最新的grids来刷新页面吗？
-        $content = $content ?: self::TASK_CONFIG[$taskId];
+        $content = $content ?: self::TASK_CONFIG[$taskId]['content'];
         $newGrids = [];
         foreach ($grids as $grid) {
-            $temp['dayId'] = $dayId;
-            $temp['userId'] = $userId;
-            $temp['content'] = $content;
-            $temp['taskId'] = $taskId;
-            $temp['startTime'] = self::grid2Time($grid['startTime']);
-            $temp['endTime'] = self::grid2Time($grid['endTime']);
-            $temp['level'] = $level;
-            $temp['createdAt'] = date('Y-m-d H:i:s');
-            $temp['updatedAt'] = date('Y-m-d H:i:s');
-            $newGrids[] = $temp;
+            $newGrids[] = self::formatGrid($grid, $taskId, $content, $level, $userId, $dayId);
         }
         return TimeGridModel::fillTodayGrids($newGrids, $userId, $dayId);
+    }
+
+    /**
+     * @param $taskId
+     * @return array
+     * @throws
+     */
+    public static function fillStartGrid($taskId) {
+        $userId = Auth::getUser()->userId;
+        $dayId = date('Ymd');
+        $grid = [
+            'taskId' => $taskId,
+            'dayId' => $dayId,
+            'level' => self::LEVEL_START_FINISH,
+            'userId' => Auth::getUser()->userId,
+            'content' => self::TASK_CONFIG[$taskId]['content'] ?: '',
+            'startTime' => date('H:i'),
+            'endTime' => '',  // 开始时不确定结束时间
+        ];
+        $grid = self::formatGrid($grid);
+        if (!Redis::instance()->set(sprintf(TaskService::TASK_STATUS, $userId), json_encode($grid), ['nx'])) {
+            throw new HabitException(Code::FAIL, '请先结束上一个任务，再开始新任务哦~');
+        }
+        return TimeGridModel::fillTodayGrids($grid, $userId, $dayId);
+    }
+
+    /**
+     * @return array
+     * @throws
+     */
+    public static function fillEndGrid() {
+        // 记录结束时间点
+        $dayId = date('Ymd');
+        $yesterdayId = date('Ymd', strtotime("-1 day"));
+        $userId = Auth::getUser()->userId;
+        if (!$grid = Redis::instance()->get(sprintf(TaskService::TASK_STATUS, $userId))) {
+            throw new HabitException(Code::FAIL, '当前没有进行中的任务~');
+        }
+        $gridInfo = json_decode($grid, true);
+        if (!$gridInfo || !$gridInfo['uuid'] || !$gridInfo['dayId']) {
+            // 进行中的任务不合法，直接删除
+            Redis::instance()->del(sprintf(TaskService::TASK_STATUS, $userId));
+            throw new HabitException(Code::FAIL, '任务停止');
+        }
+        if ($gridInfo['dayId'] == $dayId) {
+            // 当天更新前一个grid
+            $gridInfo['endTime'] = date('H:i');
+            TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
+        } else if ($gridInfo['dayId'] = $yesterdayId) {
+            // 跨一天则填两个格子
+            $gridInfo['endTime'] = date('24:00');
+            TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
+            $gridInfo['startTime'] = '00:00';
+            $gridInfo['endTime'] = date('H:i');
+            $gridInfo['dayId'] = $dayId;
+            TimeGridModel::fillGrids(self::formatGrid($gridInfo));
+        } else if ($gridInfo['dayId'] < $yesterdayId) {
+            // 跨多天属于一个异常情况，直接停止之前的grid，后续不填充
+            $gridInfo['endTime'] = date('24:00');
+            TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
+        }
+        return TimeGridModel::genDayGrid($userId, $dayId);
+    }
+
+    /**
+     * @param $grid
+     * @param $taskId
+     * @param $content
+     * @param $level
+     * @param $userId
+     * @param $dayId
+     * @return mixed
+     */
+    public static function formatGrid($grid, $taskId = '', $content = '', $level = '', $userId = '', $dayId = '') {
+        $temp['uuid'] = uniqid();
+        $temp['dayId'] = $dayId ?: $grid['dayId'];
+        $temp['userId'] = $userId ?: $grid['userId'];
+        $temp['content'] = $content ?: $grid['content'];
+        $temp['taskId'] = $taskId ?: $grid['taskId'];
+        $temp['startTime'] = self::grid2Time($grid['startTime']);
+        $temp['endTime'] = self::grid2Time($grid['endTime']);
+        $temp['level'] = $level ?: $grid['level'];
+        $temp['createdAt'] = date('Y-m-d H:i:s');
+        $temp['updatedAt'] = date('Y-m-d H:i:s');
+        return $temp;
     }
 
     public static function statistics() {
         return [];
     }
+
+
+
 }

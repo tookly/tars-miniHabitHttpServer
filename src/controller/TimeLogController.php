@@ -70,7 +70,7 @@ class TimeLogController extends Controller
         if (empty($taskId)) {
             throw new HabitException(Code::ERROR_PARAMS);
         }
-        return TaskService::start($taskId);
+        return TimeGridService::fillStartGrid($taskId);
     }
 
     /**
@@ -79,11 +79,7 @@ class TimeLogController extends Controller
     public function actionFinishTask()
     {
         Auth::checkLogin();
-        $taskId = $this->getPost('taskId', 0);
-        if (empty($taskId)) {
-            throw new HabitException(Code::ERROR_PARAMS);
-        }
-        return TaskService::finish($taskId);
+        return TimeGridService::fillEndGrid();
     }
     
 }
