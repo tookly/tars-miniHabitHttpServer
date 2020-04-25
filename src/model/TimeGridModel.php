@@ -37,6 +37,10 @@ class TimeGridModel extends Model
         $dayMinuteGrids = self::initDayMinuteGrids();
         $grids = self::getGridByUserIdAndDayId($userId, $dayId);
         foreach ($grids as $grid) {
+            // 跳过正在执行中的任务
+            if (!$grid['endTime']) {
+                continue;
+            }
             $start = intval($grid['startTime'] / 60);
             $end = intval($grid['endTime'] / 60);
             for ($i = $start; $i < $end; $i++) {
@@ -63,6 +67,8 @@ class TimeGridModel extends Model
         $dayGrid['length'] = $start . ':' . $current;
         $dayGrid['content'] = $dayMinuteGrids[$current];
         $dayGrids[] = $dayGrid;
+        $key = sprintf(self::STR_DIARY, $userId, $dayId);
+        Redis::instance()->set($key, json_encode($dayGrids));
         return $dayGrids;
     }
 
@@ -83,10 +89,7 @@ class TimeGridModel extends Model
     public static function fillTodayGrids($grids, $userId, $dayId)
     {
         self::fillGrids($grids);
-        $dayGrids = self::genDayGrid($userId, $dayId);
-        $key = sprintf(self::STR_DIARY, $userId, $dayId);
-        Redis::instance()->set($key, json_encode($dayGrids));
-        return $dayGrids;
+        return self::genDayGrid($userId, $dayId);
     }
 
     /**

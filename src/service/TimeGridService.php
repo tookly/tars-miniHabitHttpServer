@@ -129,7 +129,19 @@ class TimeGridService
         if (!Redis::instance()->set(sprintf(TaskService::TASK_STATUS, $userId), json_encode($grid), ['nx'])) {
             throw new HabitException(Code::FAIL, '请先结束上一个任务，再开始新任务哦~');
         }
-        return TimeGridModel::fillTodayGrids($grid, $userId, $dayId);
+        TimeGridModel::fillGrids($grid);
+        return self::getGoingGrid();
+//        return TimeGridModel::fillTodayGrids($grid, $userId, $dayId);
+    }
+
+    public static function getGoingGrid() {
+        $grid = Redis::instance()->get(sprintf(TaskService::TASK_STATUS, Auth::getUser()->userId));
+        $grid = json_decode($grid, true) ?: [];
+        if ($grid) {
+            $goingGrid['length'] =  intval($grid['startTime'] / 60) . ':' . intval(self::grid2Time(date('H:i')) / 60);
+            $goingGrid['content'] = $grid['content'];
+        }
+        return $goingGrid ?? [];
     }
 
     /**
@@ -152,11 +164,11 @@ class TimeGridService
         }
         if ($gridInfo['dayId'] == $dayId) {
             // 当天更新前一个grid
-            $gridInfo['endTime'] = date('H:i');
+            $gridInfo['endTime'] = self::grid2Time(date('H:i'));
             TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
         } else if ($gridInfo['dayId'] = $yesterdayId) {
             // 跨一天则填两个格子
-            $gridInfo['endTime'] = date('24:00');
+            $gridInfo['endTime'] = self::grid2Time(date('24:00'));
             TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
             $gridInfo['startTime'] = '00:00';
             $gridInfo['endTime'] = date('H:i');
@@ -164,9 +176,10 @@ class TimeGridService
             TimeGridModel::fillGrids(self::formatGrid($gridInfo));
         } else if ($gridInfo['dayId'] < $yesterdayId) {
             // 跨多天属于一个异常情况，直接停止之前的grid，后续不填充
-            $gridInfo['endTime'] = date('24:00');
+            $gridInfo['endTime'] = self::grid2Time(date('24:00'));
             TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
         }
+        Redis::instance()->del(sprintf(TaskService::TASK_STATUS, $userId));
         return TimeGridModel::genDayGrid($userId, $dayId);
     }
 

@@ -23,6 +23,7 @@ class TimeLogController extends Controller
         $data['date'] = date('Y.m.d 第W周', time());
         $data['initGrids'] = TimeGridService::getInitDayGrids();
         $data['dayGrids'] = TimeGridService::getTodayGrids();
+        $data['goingGrid'] = TimeGridService::getGoingGrid();
         return $data;
     }
 
@@ -49,6 +50,7 @@ class TimeLogController extends Controller
      */
     public function actionFillWithGrids()
     {
+        // 填充新的格子，不会影响任务进行状态
         Auth::checkLogin();
         $grids = $this->getPost('grids', '');
         $taskId = $this->getPost('taskId', 0);
