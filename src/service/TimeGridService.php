@@ -166,7 +166,7 @@ class TimeGridService
             // 当天更新前一个grid
             $gridInfo['endTime'] = self::grid2Time(date('H:i'));
             TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
-        } else if ($gridInfo['dayId'] = $yesterdayId) {
+        } else if ($gridInfo['dayId'] == $yesterdayId) {
             // 跨一天则填两个格子
             $gridInfo['endTime'] = self::grid2Time(date('24:00'));
             TimeGridModel::updateGrid($gridInfo['uuid'], $gridInfo);
