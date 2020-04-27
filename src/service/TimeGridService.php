@@ -17,7 +17,8 @@ class TimeGridService
 
     // 暂时定几个任务
     const TASK_CONFIG = [
-        1 => ['id' => 1, 'content' => '工作']
+        1 => ['id' => 1, 'content' => '工作'],
+        2 => ['id' => 2, 'content' => '睡觉']
     ];
 
     /**
@@ -57,7 +58,6 @@ class TimeGridService
         for($i = 0; $i < 86400; $i = $i + self::GAP) {
             $grid['startTime'] = self::time2Grid($i);
             $grid['endTime'] = self::time2Grid($i + self::GAP);
-            $grid['content'] = '';
             $grids[] = $grid;
         }
         return $grids;
@@ -103,6 +103,12 @@ class TimeGridService
         $content = $content ?: self::TASK_CONFIG[$taskId]['content'];
         $newGrids = [];
         foreach ($grids as $grid) {
+            if (!is_array($grid)) {
+                $gridInfo = explode('-', $grid);
+                $grid = [];
+                $grid['startTime'] = $gridInfo[0];
+                $grid['endTime'] = $gridInfo[1];
+            }
             $newGrids[] = self::formatGrid($grid, $taskId, $content, $level, $userId, $dayId);
         }
         return TimeGridModel::fillTodayGrids($newGrids, $userId, $dayId);

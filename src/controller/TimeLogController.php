@@ -5,8 +5,6 @@ namespace HttpServer\controller;
 use HttpServer\component\HabitException;
 use HttpServer\component\Controller;
 use HttpServer\conf\Code;
-use HttpServer\model\TimeGridModel;
-use HttpServer\service\TaskService;
 use HttpServer\service\TimeGridService;
 use HttpServer\component\Auth;
 
@@ -50,7 +48,6 @@ class TimeLogController extends Controller
      */
     public function actionFillWithGrids()
     {
-        // 填充新的格子，不会影响任务进行状态
         Auth::checkLogin();
         $grids = $this->getPost('grids', '');
         $taskId = $this->getPost('taskId', 0);

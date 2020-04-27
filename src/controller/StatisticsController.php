@@ -22,5 +22,13 @@ class StatisticsController extends Controller
         $data['timeGrid'] = TimeGridService::statistics();
         return $data;
     }
+
+    public function actionUserStatistics()
+    {
+        $userId = self::getPost('userId', 0);
+        $data['target'] = TargetService::statistics();
+        $data['timeGrid'] = TimeGridService::statistics();
+        return $data;
+    }
     
 }
